@@ -160,6 +160,7 @@ namespace ForumSurfer.ViewModel
 
         private void InitializeData()
         {
+            Data.Feed.UpdateAll();
             List<Data.Host> allHosts = Data.Host.LoadAll();
             foreach(Data.Host host in allHosts)
             {

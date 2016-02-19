@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel.Syndication;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace ForumSurfer.Model
 {
@@ -35,6 +37,27 @@ namespace ForumSurfer.Model
             this.Title = f.Title;
             this.Host = f.Host;
             this.Articles = Articles;
+        }
+
+
+        public void UpdateFromUri()
+        {
+            using (XmlReader x = XmlReader.Create(Location.ToString()))
+            {
+                SyndicationFeed feed = SyndicationFeed.Load(x);
+                x.Close();
+                foreach (SyndicationItem item in feed.Items)
+                {
+                    Article art = new Article();
+                    art.ParentFeed = this;
+                    art.Location = item.Links[0].Uri;
+                    art.PublishDate = item.PublishDate.ToLocalTime().DateTime;
+                    art.Title = item.Title.Text;
+                    art.Unread = true;
+
+                    Articles.Add(art);
+                }
+            }
         }
     }
 }
