@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ForumSurfer.Model
 {
-    public class Article : RSSNode
+    public class Article : BindableBase, RSSNode 
     {
         public Uri Location { get; set; }
         public DateTime PublishDate { get; set; }
@@ -39,8 +40,21 @@ namespace ForumSurfer.Model
         
 
         public String Title { get; set; }
-        public Boolean Unread { get; set; }
+        public Boolean Unread {
+            get
+            {
+                return _unread;
+            }
+            set
+            {
+                SetProperty(ref _unread, value);
+            }
+        }
+        public Feed ParentFeed { get; set; }
+        public long Id { get; set; }
 
+
+        private Boolean _unread;
 
         public Article()
         {
@@ -53,6 +67,9 @@ namespace ForumSurfer.Model
             this.PublishDate = a.PublishDate;
             this.Title = a.Title;
             this.Unread = a.Unread;
+            this.ParentFeed = a.ParentFeed;
+            this.Id = a.Id;
         }
+
     }
 }

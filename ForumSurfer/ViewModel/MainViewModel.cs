@@ -8,6 +8,10 @@ using System.Windows.Input;
 using System;
 using ForumSurfer.Collections;
 using System.Linq;
+using ForumSurfer.Model;
+using System.Diagnostics;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace ForumSurfer.ViewModel
 {
@@ -32,7 +36,19 @@ namespace ForumSurfer.ViewModel
             }
         }
 
-        public SortableObservableCollection<Model.Article> Articles { get; set; }
+
+
+        public SortableObservableCollection<Model.Article> Articles
+        {
+            get
+            {
+                return _articles;
+            }
+            set
+            {
+                _articles = value;
+            }
+        }
         public Model.Article SelectedArticle
         {
             get
@@ -41,10 +57,16 @@ namespace ForumSurfer.ViewModel
             }
             set
             {
+                if(_selectedArticle != null && _selectedArticle.Unread)
+                {
+                    MarkArticleRead(_selectedArticle);
+                }
                 _selectedArticle = value;
                 RaisePropertyChanged("SelectedArticle");
+                RaisePropertyChanged("Articles");
             }
         }
+
 
         public SortableObservableCollection<TreeNodeViewModel> Hosts
         {
@@ -63,6 +85,7 @@ namespace ForumSurfer.ViewModel
         private Model.Article _selectedArticle;
         private Thread _uiThread = Thread.CurrentThread;
         private SynchronizationContext _uiContext;
+        private SortableObservableCollection<Model.Article> _articles;
         #endregion
 
 
@@ -110,7 +133,6 @@ namespace ForumSurfer.ViewModel
                             intermediate.Add(a);
                         }
                     }
-                    //TODO: sort intermediate list
                     Articles = new SortableObservableCollection<Model.Article>(intermediate);
                 }
                 else
@@ -126,13 +148,15 @@ namespace ForumSurfer.ViewModel
                                 intermediate.Add(a);
                             }
                         }
-                        //TODO: sort intermediate list
                         Articles = new SortableObservableCollection<Model.Article>(intermediate);
                     }
                 }
+                Articles.OrderByDescending(el => el.SortKey);
             }
             RaisePropertyChanged("Articles");
         }
+
+
 
         private void InitializeData()
         {
@@ -182,5 +206,30 @@ namespace ForumSurfer.ViewModel
             }
         }
 
+
+        private void MarkArticleRead(Article art)
+        {
+            art.Unread = false;
+            Data.Article dataArticle = new Data.Article(art);
+            dataArticle.Save();
+        }
+
+
+        void Articles_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+                foreach (Model.Article item in e.NewItems)
+                    item.PropertyChanged += Article_PropertyChanged;
+
+            if (e.OldItems != null)
+                foreach (Model.Article item in e.OldItems)
+                    item.PropertyChanged -= Article_PropertyChanged;
+        }
+
+        void Article_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Unread")
+                Debug.Print("Unread has changed!");
+        }
     }
 }

@@ -32,7 +32,7 @@ namespace ForumSurfer.Data
                         feed.LastUpdate = DateTime.Parse(reader["last_update"].ToString());
                         feed.Host = feed.Location.Host;
                         feed.Title = reader["title"].ToString();
-
+                        feed.Id = (long)reader["feed_id"];
                         results.Add(feed);
                     }
                 }

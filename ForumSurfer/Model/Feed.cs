@@ -13,6 +13,7 @@ namespace ForumSurfer.Model
         public String Title { get; set; }
         public String Host { get; set; }
         public List<Article> Articles { get; set; }
+        public long Id { get; set; }
 
         public Object SortKey
         {

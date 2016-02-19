@@ -113,6 +113,7 @@
     <Compile Include="Data\Host.cs" />
     <Compile Include="Data\Repository.cs" />
     <Compile Include="Model\Article.cs" />
+    <Compile Include="Model\BindableBase.cs" />
     <Compile Include="Model\Feed.cs" />
     <Compile Include="Model\Host.cs" />
     <Compile Include="Model\RSSNode.cs" />

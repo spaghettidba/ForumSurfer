@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
- 
+using System.ComponentModel;
+using System.Collections.Specialized;
+
 namespace ForumSurfer.Collections
 {
     public class SortableObservableCollection<T> : ObservableCollection<T>
     {
         public SortableObservableCollection() : base()
         {
-
         }
 
         public SortableObservableCollection(ICollection<T> c) : base(c)
@@ -54,3 +55,4 @@ namespace ForumSurfer.Collections
     }
 
 }
+
