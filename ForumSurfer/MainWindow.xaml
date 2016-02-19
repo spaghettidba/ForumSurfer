@@ -4,12 +4,33 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-        xmlns:local="clr-namespace:ForumSurfer"
+        xmlns:local="clr-namespace:ForumSurfer.ViewModel"
+        xmlns:browser="clr-namespace:ForumSurfer.Browser"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:command="http://www.galasoft.ch/mvvmlight"
         mc:Ignorable="d"
         GlowBrush="{DynamicResource AccentColorBrush}"
         SaveWindowPosition="True"
         Title="Forum Surfer" Height="350" Width="525"
         WindowState="Maximized">
+
+    <Window.Resources>
+        <local:MainViewModel x:Key="MainViewModel" />
+        <Style TargetType="{x:Type Control}" x:Key="ControlStyle">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="15" />
+        </Style>
+        <Style TargetType="{x:Type TreeViewItem}" x:Key="TreeStyle" BasedOn="{StaticResource ControlStyle}" />
+        <Style TargetType="{x:Type TextBlock}" x:Key="TextStyle" BasedOn="{StaticResource ControlStyle}" />
+    </Window.Resources>
+    <Window.DataContext>
+        <Binding Source="{StaticResource MainViewModel}" />
+    </Window.DataContext>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <command:EventToCommand Command="{Binding LoadedCommand}" PassEventArgsToCommand="True" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
@@ -20,29 +41,83 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TreeView x:Name="Feeds">
+        <TreeView x:Name="Feeds" DataContext="{Binding Path=TreeModel}" ItemsSource="{Binding Items, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectedItemChanged">
+                    <command:EventToCommand Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.SelectedItemChangedCommand}" PassEventArgsToCommand="True"></command:EventToCommand>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
             
             <!-- Controls the style of the root node only -->
             <TreeView.ItemContainerStyle>
-                <Style TargetType="TreeViewItem">
+                <Style TargetType="TreeViewItem" BasedOn="{StaticResource TreeStyle}">
                     <Setter Property="TreeViewItem.IsExpanded" Value="True"/>
                 </Style>
             </TreeView.ItemContainerStyle>
-            
+
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type local:SimpleTreeNodeViewModel}" ItemsSource="{Binding Children}">
+                    <!-- Controls the style of the children nodes-->
+                    <HierarchicalDataTemplate.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="TreeViewItem.IsExpanded" Value="True" />
+                            <Setter Property="TreeViewItem.IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
+                            <Setter Property="TreeViewItem.FontFamily" Value="Segoe UI"/>
+                            <Setter Property="TreeViewItem.FontSize" Value="15" />
+                            <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView"/>
+                        </Style>
+                    </HierarchicalDataTemplate.ItemContainerStyle>
+                    <TextBlock Text="{Binding Title}">
+                        <TextBlock.Style>
+                            <Style>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeViewItem}}, FallbackValue=False}" Value="True">
+                                        <Setter Property="TextBlock.FontWeight" Value="Bold" />
+                                        <Setter Property="TextBlock.Background" Value="#41B1E1" />
+                                        <Setter Property="TextBlock.Foreground" Value="White" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </HierarchicalDataTemplate>
+            </TreeView.Resources>
         </TreeView>
 
-        <ListBox Grid.Column="2" Name="Articles">
+        <ListBox Grid.Column="2" Name="ArticlesList" ItemsSource="{Binding Articles, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" SelectedItem="{Binding Path=SelectedArticle, Mode=TwoWay}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top"></TextBlock>
-                        <TextBlock DockPanel.Dock="Bottom"></TextBlock>
+                        <TextBlock DockPanel.Dock="Top" Text="{Binding DisplayDate}" >
+                            <TextBlock.Style>
+                                <Style>
+                                    <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+                                    <Setter Property="TextBlock.FontSize" Value="12" />
+                                    <Setter Property="TextBlock.Foreground" Value="#41B1E1" />
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Title}">
+                            <TextBlock.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Unread}" Value="True">
+                                            <Setter Property="TextBlock.FontWeight" Value="Bold" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                    <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+                                    <Setter Property="TextBlock.FontSize" Value="15" />
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </DockPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <WebBrowser Grid.Column="3" Name="wbFeed" Source="http://www.stackoverflow.com">
+
+
+        <WebBrowser browser:WebBrowserHelper.LinkSource="{Binding Path=SelectedArticle.Location}" Grid.Column="3" Name="wbFeed">
             
         </WebBrowser>
         
