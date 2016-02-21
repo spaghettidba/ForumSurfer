@@ -15,7 +15,7 @@ namespace ForumSurfer.Data
             List<Feed> feeds = Feed.LoadAll();
             foreach(Feed feed in feeds)
             {
-                Host feedHost = results.FirstOrDefault(el => el.Location.Equals(feed.Host));
+                Host feedHost = results.FirstOrDefault(el => el.Location.Equals(new Uri("http://" + feed.Host)));
                 if (feedHost == null)
                 {
                     feedHost = new Host();

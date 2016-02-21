@@ -105,6 +105,7 @@
     </ApplicationDefinition>
     <Compile Include="Browser\BrowserHelper.cs" />
     <Compile Include="Browser\WebBrowserHelper.cs" />
+    <Compile Include="Collections\ArticleEqualityComparer.cs" />
     <Compile Include="Collections\RSSNodeEqualityComparer.cs" />
     <Compile Include="Collections\SortableObservableCollection.cs" />
     <Compile Include="Collections\SortableObservableCollectionExtension.cs" />

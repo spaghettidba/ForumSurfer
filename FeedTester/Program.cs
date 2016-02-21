@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.ServiceModel.Syndication;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace FeedTester
 {
@@ -25,23 +27,62 @@ namespace FeedTester
 
         static void Main(string[] args)
         {
-            CreateDatabase();
-            InsertFeeds();
-            UpdateAllFeeds();
+            //CreateDatabase();
+            //InsertFeed("http://dba.stackexchange.com/feeds/tag/sql-server%20OR%20sql-server-2008%20OR%20sql-server-2012%20OR%20sql-server-2008-r2%20OR%20sql-server-2014");
+            //UpdateAllFeeds();
+            ParseOpml();
+        }
+
+        private static void ParseOpml()
+        {
+            XDocument doc = XDocument.Load("file://d:/temp/feeds.opml");
+            var descendants = doc.Descendants("outline");
+            var elements = descendants.Elements("outline");
+            List<Outline> t = doc
+                                   .Descendants("outline")
+                                   .Elements("outline")
+                                   .Select(o => new Outline
+                                   {
+                                       Text = o.Attribute("text").Value,
+                                       URL = o.Attribute("xmlUrl").Value
+                                   })
+                                   .ToList();
+            foreach(Outline o in t)
+            {
+                try
+                {
+                    Debug.Print(o.Text);
+                    InsertFeed(o.URL);
+                }
+                catch(Exception e)
+                {
+                    Debug.Print("Errore!!! " + o.Text);
+                    Debug.Print(o.URL);
+                    Debug.Print(e.StackTrace);
+                }
+            }
         }
 
 
-        static void InsertFeeds()
+        class Outline
         {
-            string url = "http://dba.stackexchange.com/feeds/tag/sql-server%20OR%20sql-server-2008%20OR%20sql-server-2012%20OR%20sql-server-2008-r2%20OR%20sql-server-2014";
+            public string Text { get; set; }
+            public string URL { get; set; }
+        }
+
+
+        static void InsertFeed(string url)
+        {
             SyndicationFeed feed;
 
             using (XmlReader reader = XmlReader.Create(url))
             {
                 feed = SyndicationFeed.Load(reader);
+                feed.BaseUri = new Uri(url);
                 reader.Close();
             }
-            InsertFeed(feed);
+            long id = InsertDBFeed(feed);
+            Debug.Print("Inserted with Id = " + id);
         }
 
 
@@ -102,7 +143,7 @@ namespace FeedTester
         }
 
 
-        static long InsertFeed(SyndicationFeed feed)
+        static long InsertDBFeed(SyndicationFeed feed)
         {
             String sqlInsertHosts = @"
                 INSERT INTO Hosts (uri) 
@@ -164,14 +205,14 @@ namespace FeedTester
                     var host_id = command.ExecuteScalar();
 
                     command = new SQLiteCommand(sqlInsertFeeds, m_dbConnection);
-                    command.Parameters.AddWithValue("$uri", feed.Links[0].Uri.ToString());
+                    command.Parameters.AddWithValue("$uri", feed.BaseUri.ToString());
                     command.Parameters.AddWithValue("$last_update", feed.LastUpdatedTime.ToString("s"));
                     command.Parameters.AddWithValue("$title", feed.Title.Text);
                     command.Parameters.AddWithValue("$host_id", host_id);
                     command.ExecuteNonQuery();
 
                     command = new SQLiteCommand(sqlGetFeed, m_dbConnection);
-                    command.Parameters.AddWithValue("$uri", feed.Links[0].Uri.ToString());
+                    command.Parameters.AddWithValue("$uri", feed.BaseUri.ToString());
                     feed_id = (long)command.ExecuteScalar();
                     tran.Commit();
                 }
@@ -253,7 +294,7 @@ namespace FeedTester
                         );
                     ";
 
-            long feed_id = InsertFeed(feed);
+            long feed_id = InsertDBFeed(feed);
 
             using (SQLiteConnection m_dbConnection = new SQLiteConnection("Data Source=" + DatabasePath + ";Version=3;"))
             {

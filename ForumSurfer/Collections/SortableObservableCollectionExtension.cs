@@ -34,7 +34,8 @@ namespace ForumSurfer.Collections
 
             foreach (var item in items)
             {
-                if(list.FirstOrDefault(el => comp.Equals(el,item)) == null)
+                var sought = list.FirstOrDefault(el => comp.Equals(el, item));
+                if (sought == null)
                     list.Add(item);
             }
         }

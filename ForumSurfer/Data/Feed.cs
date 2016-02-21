@@ -30,7 +30,9 @@ namespace ForumSurfer.Data
                     {
                         Feed feed = new Feed();
                         feed.Location = new Uri(reader["uri"].ToString());
-                        feed.LastUpdate = DateTime.Parse(reader["last_update"].ToString());
+                        String lastUpd = reader["last_update"].ToString();
+                        if (String.IsNullOrEmpty(lastUpd)) lastUpd = DateTime.Now.ToString("s");
+                        feed.LastUpdate = DateTime.Parse(lastUpd);
                         feed.Host = feed.Location.Host;
                         feed.Title = reader["title"].ToString();
                         feed.Id = (long)reader["feed_id"];
@@ -107,12 +109,27 @@ namespace ForumSurfer.Data
         public static void UpdateAll()
         {
             List<Feed> feeds = LoadAll();
-
+            List<Task> TaskList = new List<Task>();
             foreach (Feed feed in feeds)
             {
-                feed.Articles.Clear();
-                feed.UpdateFromUri();
-                foreach(Model.Article a in feed.Articles)
+                var LastTask = new Task(() => {
+                    feed.Articles.Clear();
+                    try
+                    {
+                        feed.UpdateFromUri();
+                    }
+                    catch
+                    {
+                        //TODO: log error somewhere
+                    }
+                });
+                LastTask.Start();
+                TaskList.Add(LastTask);
+            }
+            Task.WaitAll(TaskList.ToArray());
+            foreach(Feed feed in feeds)
+            {
+                foreach (Model.Article a in feed.Articles)
                 {
                     Article art = new Article(a);
                     art.Save();

@@ -12,6 +12,8 @@ using ForumSurfer.Model;
 using System.Diagnostics;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace ForumSurfer.ViewModel
 {
@@ -37,6 +39,23 @@ namespace ForumSurfer.ViewModel
         }
 
 
+        private CollectionViewSource _sortedArticles = new CollectionViewSource();
+        public CollectionViewSource SortedArticles
+        {
+            get
+            {
+                _sortedArticles.Source = this._articles; // Set source to our original ObservableCollection
+                return _sortedArticles;
+            }
+            set
+            {
+                if (value != _sortedArticles)
+                {
+                    _sortedArticles = value;
+                    RaisePropertyChanged("SortedArticles"); // MVVMLight ObservableObject
+                }
+            }
+        }
 
         public SortableObservableCollection<Model.Article> Articles
         {
@@ -72,6 +91,11 @@ namespace ForumSurfer.ViewModel
         {
             get
             {
+                SortableObservableCollection<TreeNodeViewModel> _hosts = new SortableObservableCollection<TreeNodeViewModel>();
+                foreach(Host h in _allData)
+                {
+                    _hosts.Add(new SimpleTreeNodeViewModel(h));
+                }
                 return _hosts;
             }
         }
@@ -81,11 +105,12 @@ namespace ForumSurfer.ViewModel
 
         #region privateVars
         private Thread _updaterThread;
-        private SortableObservableCollection<TreeNodeViewModel> _hosts = new SortableObservableCollection<TreeNodeViewModel>();
         private Model.Article _selectedArticle;
         private Thread _uiThread = Thread.CurrentThread;
         private SynchronizationContext _uiContext;
         private SortableObservableCollection<Model.Article> _articles;
+        private TreeNodeViewModel _selectedNode;
+        private List<Data.Host> _allData;
         #endregion
 
 
@@ -98,7 +123,7 @@ namespace ForumSurfer.ViewModel
         {
             SelectedItemChangedCommand = new RelayCommand<RoutedPropertyChangedEventArgs<object>>(SelectedItemChanged);
             LoadedCommand = new RelayCommand<RoutedEventArgs>(Loaded);
-            InitializeData();
+            InitializeData(true);
             _updaterThread = new Thread(() => UpdaterDelegate());
             _updaterThread.Start();
         }
@@ -119,7 +144,8 @@ namespace ForumSurfer.ViewModel
             if(selected is SimpleTreeNodeViewModel)
             {
                 SimpleTreeNodeViewModel tvm = (SimpleTreeNodeViewModel)selected;
-                if(tvm.Node is Model.Feed)
+                _selectedNode = tvm;
+                if (tvm.Node is Model.Feed)
                 {
                     Articles = new SortableObservableCollection<Model.Article>(((Model.Feed)tvm.Node).Articles);
                 }
@@ -153,50 +179,95 @@ namespace ForumSurfer.ViewModel
                 }
                 Articles.OrderByDescending(el => el.SortKey);
             }
-            RaisePropertyChanged("Articles");
+            RaisePropertyChanged("SortedArticles");
         }
 
 
 
-        private void InitializeData()
+        private void InitializeData(Boolean refreshTreeView)
         {
-            Data.Feed.UpdateAll();
-            List<Data.Host> allHosts = Data.Host.LoadAll();
-            foreach(Data.Host host in allHosts)
+            //
+            // Read from Database
+            //
+            _allData = Data.Host.LoadAll();
+
+            //
+            // Update the treeview
+            //
+
+            if (refreshTreeView)
+                RaisePropertyChanged("TreeModel");
+
+            //
+            // Update articles
+            //
+            if(_selectedNode != null)
             {
-                var theHost = _hosts.FirstOrDefault(el => el.Id.Equals(host.Location));
-                if (theHost == null)
+                SimpleTreeNodeViewModel tvm = (SimpleTreeNodeViewModel)_selectedNode;
+                if (tvm.Node is Model.Feed)
                 {
-                    _hosts.Add(new SimpleTreeNodeViewModel(host));
+                    Model.Feed selectedFeed = (Model.Feed)tvm.Node;
+                    // Find the feed and add the Articles
+                    foreach(Host h in _allData)
+                    {
+                        Feed f = h.Feeds.FirstOrDefault(el => el.Location.Equals(selectedFeed.Location));
+                        if(f != null)
+                        {
+                            Articles.AddMissing(f.Articles, new ArticleEqualityComparer());
+                        }
+                    }
+
+                }
+                else if (tvm.Node is Model.Host)
+                {
+                    Model.Host selectedHost = (Model.Host)tvm.Node;
+                    // Find the host and add the Articels
+                    Model.Host h = _allData.FirstOrDefault(el => el.Location.Equals(selectedHost.Location));
+                    foreach (Model.Feed feed in h.Feeds)
+                    {
+                        Articles.AddMissing(feed.Articles, new ArticleEqualityComparer());
+                    }
                 }
                 else
                 {
-                    SortableObservableCollection<TreeNodeViewModel> newChildren = new SortableObservableCollection<TreeNodeViewModel>();
-                    foreach(Model.Feed f in host.Feeds)
+                    foreach(Model.Host h in _allData)
                     {
-                        newChildren.Add(new SimpleTreeNodeViewModel(f));
+                        foreach (Model.Feed feed in h.Feeds)
+                        {
+                            Articles.AddMissing(feed.Articles, new ArticleEqualityComparer());
+                        }
                     }
-                    theHost.Children.AddMissing(newChildren, new TreeNodeEqualityComparer());
-                    theHost.Children.OrderByDescending(el => el.SortKey);
                 }
+                SortedArticles.SortDescriptions.Clear(); // Clear all 
+                SortedArticles.SortDescriptions.Add(new SortDescription("SortKey", ListSortDirection.Descending)); // Sort descending by "PropertyName"
+                //Articles.OrderByDescending(el => el.SortKey);
             }
-            RaisePropertyChanged("TreeModel");
+            //RaisePropertyChanged("Articles");
         }
 
 
         private void UpdateData()
         {
-            InitializeData();
+            InitializeData(false);
         }
 
 
         private void UpdaterDelegate()
         {
+            Task databaseTask = null;
             while(_uiThread.IsAlive)
             {
-                if(_uiContext != null)
+
+                if (databaseTask == null || databaseTask.IsCompleted)
                 {
-                    _uiContext.Send(DivideByZeroException => UpdateData(), null);
+                    databaseTask = Task.Run(() =>
+                    {
+                        Data.Feed.UpdateAll();
+                        if (_uiContext != null)
+                        {
+                            _uiContext.Send(DivideByZeroException => UpdateData(), null);
+                        }
+                    });
                 }
                 for(int i =0;i< AutoUpdateSeconds * 100; i++)
                 {

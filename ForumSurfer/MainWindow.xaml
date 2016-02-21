@@ -84,7 +84,7 @@
             </TreeView.Resources>
         </TreeView>
 
-        <ListBox Grid.Column="2" Name="ArticlesList" ItemsSource="{Binding Articles, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" SelectedItem="{Binding Path=SelectedArticle, Mode=TwoWay}">
+        <ListBox Grid.Column="2" Name="ArticlesList" ItemsSource="{Binding SortedArticles.View, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" SelectedItem="{Binding Path=SelectedArticle, Mode=TwoWay}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <DockPanel>
