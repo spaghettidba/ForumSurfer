@@ -96,6 +96,7 @@ namespace ForumSurfer.ViewModel
                 {
                     _hosts.Add(new SimpleTreeNodeViewModel(h));
                 }
+                _hosts.Sort(el => el.SortKey, ListSortDirection.Ascending);
                 return _hosts;
             }
         }
@@ -163,21 +164,23 @@ namespace ForumSurfer.ViewModel
                 }
                 else
                 {
-                    foreach(SimpleTreeNodeViewModel item in tvm.Children)
+                    if (_articles == null)
+                        _articles = new SortableObservableCollection<Article>();
+                    _articles.Clear();
+                    foreach(Model.Host h in _allData)
                     {
-                        Model.Host h = (Model.Host)(item.Node);
-                        List<Model.Article> intermediate = new List<Model.Article>();
                         foreach (Model.Feed feed in h.Feeds)
                         {
                             foreach (Model.Article a in feed.Articles)
                             {
-                                intermediate.Add(a);
+                                _articles.Add(a);
                             }
                         }
-                        Articles = new SortableObservableCollection<Model.Article>(intermediate);
                     }
                 }
-                Articles.OrderByDescending(el => el.SortKey);
+                SortedArticles.SortDescriptions.Clear(); // Clear all 
+                SortedArticles.SortDescriptions.Add(new SortDescription("SortKey", ListSortDirection.Descending)); // Sort descending by "PropertyName"
+                //Articles.OrderByDescending(el => el.SortKey);
             }
             RaisePropertyChanged("SortedArticles");
         }

@@ -43,7 +43,38 @@ namespace ForumSurfer.Data
                 }
             }
 
-            return results.OrderByDescending(o => o.PublishDate).ToList();
+            return results.ToList();
+        }
+
+
+
+        public static Article LoadByUri(Uri u)
+        {
+            Article result = null;
+            String sqlArticles = @"
+                SELECT * 
+                FROM Articles
+                WHERE uri = $uri;
+            ";
+
+            using (SQLiteConnection m_dbConnection = new SQLiteConnection(Repository.ConnectionString))
+            {
+                m_dbConnection.Open();
+                SQLiteCommand command = new SQLiteCommand(sqlArticles, m_dbConnection);
+                command.Parameters.AddWithValue("$uri", u.ToString());
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result = new Article();
+                        result.Location = new Uri(reader["uri"].ToString());
+                        result.PublishDate = DateTime.Parse(reader["published_date"].ToString());
+                        result.Title = reader["title"].ToString();
+                        result.Unread = !(reader["unread"].ToString().Equals("0"));
+                    }
+                }
+            }
+            return result;
         }
 
 

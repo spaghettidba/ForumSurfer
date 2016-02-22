@@ -46,7 +46,7 @@ namespace ForumSurfer.Data
                 f.Articles = new List<Model.Article>(Article.LoadByFeed(f));
             }
 
-            return results.OrderBy(o => o.Host).ToList();
+            return results.ToList();
         }
 
 
@@ -109,6 +109,14 @@ namespace ForumSurfer.Data
         public static void UpdateAll()
         {
             List<Feed> feeds = LoadAll();
+            HashSet<Uri> existingArticles = new HashSet<Uri>();
+            foreach(Feed f in feeds)
+            {
+                foreach(Article a in f.Articles)
+                {
+                    existingArticles.Add(a.Location);
+                }
+            }
             List<Task> TaskList = new List<Task>();
             foreach (Feed feed in feeds)
             {
@@ -131,8 +139,11 @@ namespace ForumSurfer.Data
             {
                 foreach (Model.Article a in feed.Articles)
                 {
-                    Article art = new Article(a);
-                    art.Save();
+                    if(!existingArticles.Contains(a.Location))
+                    {
+                        Article art = new Article(a);
+                        art.Save();
+                    }
                 }
             }
         }
