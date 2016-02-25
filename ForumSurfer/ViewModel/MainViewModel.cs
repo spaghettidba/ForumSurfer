@@ -24,17 +24,20 @@ namespace ForumSurfer.ViewModel
         #region ViewModelAttributes
         public TreeViewModel TreeModel {
             get {
-                return new TreeViewModel
-                {
-                    Items = new SortableObservableCollection<TreeNodeViewModel>
+                if (Hosts == null)
+                    return null;
+                else
+                    return new TreeViewModel
                     {
-                        new SimpleTreeNodeViewModel()
+                        Items = new SortableObservableCollection<TreeNodeViewModel>
                         {
-                            Title = "Feeds",
-                            Children = new SortableObservableCollection<TreeNodeViewModel>(Hosts)
+                            new SimpleTreeNodeViewModel()
+                            {
+                                Title = "Feeds",
+                                Children = new SortableObservableCollection<TreeNodeViewModel>(Hosts)
+                            }
                         }
-                    }
-                };
+                    };
             }
         }
 
@@ -91,6 +94,8 @@ namespace ForumSurfer.ViewModel
         {
             get
             {
+                if (_allData == null)
+                    return null;
                 SortableObservableCollection<TreeNodeViewModel> _hosts = new SortableObservableCollection<TreeNodeViewModel>();
                 foreach(Host h in _allData)
                 {
@@ -124,15 +129,16 @@ namespace ForumSurfer.ViewModel
         {
             SelectedItemChangedCommand = new RelayCommand<RoutedPropertyChangedEventArgs<object>>(SelectedItemChanged);
             LoadedCommand = new RelayCommand<RoutedEventArgs>(Loaded);
-            InitializeData(true);
-            _updaterThread = new Thread(() => UpdaterDelegate());
-            _updaterThread.Start();
         }
 
 
         private void Loaded(RoutedEventArgs e)
         {
             _uiContext = SynchronizationContext.Current;
+            Data.Repository.CreateDatabase();
+            InitializeData(true);
+            _updaterThread = new Thread(() => UpdaterDelegate());
+            _updaterThread.Start();
         }
 
         private void SelectedItemChanged(RoutedPropertyChangedEventArgs<object> obj)

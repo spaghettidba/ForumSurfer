@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -126,9 +127,10 @@ namespace ForumSurfer.Data
                     {
                         feed.UpdateFromUri();
                     }
-                    catch
+                    catch(Exception e)
                     {
                         //TODO: log error somewhere
+                        Debug.Print(e.Message);
                     }
                 });
                 LastTask.Start();

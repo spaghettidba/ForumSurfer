@@ -36,6 +36,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>ForumSurfer.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
@@ -119,6 +122,7 @@
     <Compile Include="Model\Feed.cs" />
     <Compile Include="Model\Host.cs" />
     <Compile Include="Model\RSSNode.cs" />
+    <Compile Include="Model\SyndicationFeedXmlReader.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\SimpleTreeNodeViewModel.cs" />
     <Compile Include="ViewModel\TreeViewModel.cs" />
@@ -167,6 +171,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Background\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\ForumSurfer.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="ForumSurfer.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.99.0\build\net451\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.99.0\build\net451\System.Data.SQLite.Core.targets')" />

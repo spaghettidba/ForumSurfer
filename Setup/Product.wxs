@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <?if $(var.Platform) = x64 ?>
+  <?define Win64 = "yes" ?>
+  <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+  <?define PlatformReleaseFolder = "Release x64" ?>
+  <?else ?>
+  <?define Win64 = "no" ?>
+  <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+  <?define PlatformReleaseFolder = "Release" ?>
+  <?endif ?>
+  
+	<Product Id="*" Name="ForumSurfer" Language="1033" Version="1.0.0.0" Manufacturer="sqlconsulting.it" UpgradeCode="98a3652e-6971-43f8-a250-f166d112d95e">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="REINSTALLMODE" Value="amus" />
+    <MajorUpgrade AllowDowngrades="yes" />
+
+    <Feature Id="ProductFeature" Title="ForumSurfer" Level="1">
+      <ComponentGroupRef Id="ProductFiles" />
+      <ComponentGroupRef Id="Sqlitex86Files" />
+      <ComponentGroupRef Id="Sqlitex64Files" />
+      <ComponentRef Id="ProductStartMenuShortcut" />
+    </Feature>
+
+    <!-- http://stackoverflow.com/a/259685/66629 -->
+    <UI Id="UserInterface">
+      <Property Id="WIXUI_INSTALLDIR" Value="TARGETDIR" />
+      <Property Id="WixUI_Mode" Value="Custom" />
+
+      <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="9" Bold="yes" />
+      <TextStyle Id="WixUI_Font_Title"  FaceName="Tahoma" Size="9" Bold="yes" />
+
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+    </UI>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.PlatformProgramFilesFolder)">
+        <Directory Id="ProductProgramFilesDirectory" Name="ForumSurfer" >
+          <Directory Id="SQLitex86" Name="x86" />
+          <Directory Id="SQLitex64" Name="x64" />
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ManufacturerProgramMenuDirectory" Name="sqlconsulting.it">
+          <Directory Id="ProductProgramMenuDirectory" Name="ForumSurfer" />
+        </Directory>
+      </Directory>
+      <Directory Id="DesktopFolder" />
+    </Directory>
+
+    <Component Id="ProductStartMenuShortcut" Guid="C5AB44D2-51B1-4D1D-AB2E-6610D89EFEA9" Directory="ProductProgramMenuDirectory">
+      <Shortcut Id="ApplicationStartMenuShortcut" Name="ForumSurfer" Target="[ProductProgramFilesDirectory]ForumSurfer.exe" WorkingDirectory="ProductProgramFilesDirectory" />
+      <RemoveFolder Id="ManufacturerProgramMenuRemoveFolder" Directory="ManufacturerProgramMenuDirectory" On="uninstall"/>
+      <RemoveFolder Id="ProductProgramMenuDirectoryRemoveFolder" Directory="ProductProgramMenuDirectory" On="uninstall"/>
+      <RegistryValue Root="HKCU" Key="Software\sqlconsulting.it\ForumSurfer" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+    </Component>
+    
+	  <ComponentGroup Id="ProductFiles" Directory="ProductProgramFilesDirectory">
+        <Component Id="cmp_0"  Guid="*"><File Id="file_0"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\EntityFramework.dll" /></Component>
+        <Component Id="cmp_1"  Guid="*"><File Id="file_1"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\EntityFramework.SqlServer.dll" /></Component>
+        <Component Id="cmp_2"  Guid="*"><File Id="file_2"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\GalaSoft.MvvmLight.dll" /></Component>
+        <Component Id="cmp_3"  Guid="*"><File Id="file_3"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\GalaSoft.MvvmLight.Extras.dll" /></Component>
+        <Component Id="cmp_4"  Guid="*"><File Id="file_4"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\GalaSoft.MvvmLight.Platform.dll" /></Component>
+        <Component Id="cmp_5"  Guid="*"><File Id="file_5"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\MahApps.Metro.dll" /></Component>
+        <Component Id="cmp_6"  Guid="*"><File Id="file_6"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\Microsoft.Practices.ServiceLocation.dll" /></Component>
+        <Component Id="cmp_7"  Guid="*"><File Id="file_7"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\System.Data.SQLite.dll" /></Component>
+        <Component Id="cmp_8"  Guid="*"><File Id="file_8"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\System.Data.SQLite.EF6.dll" /></Component>
+        <Component Id="cmp_9"  Guid="*"><File Id="file_9"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\System.Data.SQLite.Linq.dll" /></Component>
+        <Component Id="cmp_10" Guid="*"><File Id="file_10" KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\System.Windows.Interactivity.dll" /></Component>
+        <Component Id="cmp_11" Guid="*"><File Id="file_11" KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\ForumSurfer.exe" /></Component>
+        <Component Id="cmp_12" Guid="*"><File Id="file_12" KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\ForumSurfer.exe.config" /></Component>
+    </ComponentGroup>
+    
+    <ComponentGroup Id="Sqlitex86Files" Directory="SQLitex86">
+        <Component Id="cmp_1000"  Guid="*"><File Id="file_1000"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\x86\SQLite.Interop.dll" /></Component>
+    </ComponentGroup>
+    
+    <ComponentGroup Id="Sqlitex64Files" Directory="SQLitex64">
+        <Component Id="cmp_2000"  Guid="*"><File Id="file_2000"  KeyPath="yes" Source="..\ForumSurfer\bin\$(var.PlatformReleaseFolder)\x64\SQLite.Interop.dll" /></Component>
+    </ComponentGroup>
+  </Product>
+</Wix>

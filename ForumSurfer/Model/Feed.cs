@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.ServiceModel.Syndication;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,6 +43,8 @@ namespace ForumSurfer.Model
 
         public void UpdateFromUri()
         {
+            //WebClient client = new WebClient();
+            //using (SyndicationFeedXmlReader x = new SyndicationFeedXmlReader(client.OpenRead(Location)))
             using (XmlReader x = XmlReader.Create(Location.ToString()))
             {
                 SyndicationFeed feed = SyndicationFeed.Load(x);

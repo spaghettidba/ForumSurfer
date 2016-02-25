@@ -87,30 +87,49 @@
         <ListBox Grid.Column="2" Name="ArticlesList" ItemsSource="{Binding SortedArticles.View, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" SelectedItem="{Binding Path=SelectedArticle, Mode=TwoWay}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="{Binding DisplayDate}" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding DisplayDate}">
                             <TextBlock.Style>
                                 <Style>
                                     <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
                                     <Setter Property="TextBlock.FontSize" Value="12" />
-                                    <Setter Property="TextBlock.Foreground" Value="#41B1E1" />
+                                    <Setter Property="TextBlock.Foreground" Value="Gray" />
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Title}">
-                            <TextBlock.Style>
-                                <Style>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Unread}" Value="True">
-                                            <Setter Property="TextBlock.FontWeight" Value="Bold" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                    <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
-                                    <Setter Property="TextBlock.FontSize" Value="15" />
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </DockPanel>
+                        <DockPanel Grid.Column="1" HorizontalAlignment="Left">
+                            <TextBlock DockPanel.Dock="Top" Text="{Binding ParentFeedName}" TextTrimming="CharacterEllipsis">
+                                <TextBlock.Style>
+                                    <Style>
+                                        <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+                                        <Setter Property="TextBlock.FontSize" Value="12" />
+                                        <Setter Property="TextBlock.Foreground" Value="#41B1E1" />
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Title}" TextTrimming="CharacterEllipsis">
+                                <TextBlock.Style>
+                                    <Style>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Unread}" Value="True">
+                                                <Setter Property="TextBlock.FontWeight" Value="Bold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                        <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+                                        <Setter Property="TextBlock.FontSize" Value="15" />
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DockPanel>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

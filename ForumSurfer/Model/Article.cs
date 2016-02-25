@@ -30,6 +30,21 @@ namespace ForumSurfer.Model
             }
         }
 
+        public String ParentFeedName
+        {
+            get
+            {
+                if(ParentFeed != null)
+                {
+                    return ParentFeed.Title;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         public Object SortKey
         {
             get

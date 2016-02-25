@@ -28,9 +28,9 @@ namespace FeedTester
         static void Main(string[] args)
         {
             //CreateDatabase();
-            //InsertFeed("http://dba.stackexchange.com/feeds/tag/sql-server%20OR%20sql-server-2008%20OR%20sql-server-2012%20OR%20sql-server-2008-r2%20OR%20sql-server-2014");
-            //UpdateAllFeeds();
-            ParseOpml();
+            //InsertFeed("http://www.sqlservercentral.com/Forums/RssFeed2799-0-0-1.aspx");
+            UpdateAllFeeds();
+            //ParseOpml();
         }
 
         private static void ParseOpml()
@@ -232,7 +232,8 @@ namespace FeedTester
         {
             String sqlFeeds = @"
                 SELECT *
-                FROM Feeds;
+                FROM Feeds
+                WHERE feed_id = 47;
             ";
 
             List<SyndicationFeed> feeds = new List<SyndicationFeed>();
@@ -251,6 +252,7 @@ namespace FeedTester
                         using (XmlReader x = XmlReader.Create(uri))
                         {
                             feed = SyndicationFeed.Load(x);
+                            feed.BaseUri = new Uri(uri);
                             x.Close();
                         }
                     }

@@ -95,6 +95,34 @@ namespace ForumSurfer.ViewModel
 
         }
 
+        public override int UnreadCount
+        {
+            get
+            {
+                int result = 0;
+                if (_children == null)
+                    result = 0;
+                else
+                {
+                    if(_node is Host)
+                    {
+                        foreach(Feed f in ((Host)_node).Feeds)
+                        {
+                            result += (f.Articles.Count(el => el.Unread));
+                        }
+                        return result;
+                    }
+                    else if(_node is Feed)
+                    {
+                        result = (((Feed)_node).Articles.Count(el => el.Unread));
+                    }
+                }
+                return result;
+            }
+        }
+
+
+
         public SimpleTreeNodeViewModel()
         {
 

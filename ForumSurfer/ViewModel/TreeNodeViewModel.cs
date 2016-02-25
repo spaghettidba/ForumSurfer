@@ -15,5 +15,7 @@ namespace ForumSurfer.ViewModel
         public abstract String Title { get; set; }
         public abstract SortableObservableCollection<TreeNodeViewModel> Children { get; set; }
         public abstract bool IsSelected { get; set; }
+        public abstract int UnreadCount { get; }
+        //public abstract bool HasUnread { get; }
     }
 }
