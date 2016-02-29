@@ -33,5 +33,11 @@ namespace ForumSurfer
         {
             e.Handled = true;
         }
+
+        private void TreeViewItem_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ((TreeViewItem)sender).IsSelected = true;
+            e.Handled = true;
+        }
     }
 }

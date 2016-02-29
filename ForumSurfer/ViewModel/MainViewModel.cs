@@ -14,6 +14,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace ForumSurfer.ViewModel
 {
@@ -89,6 +90,8 @@ namespace ForumSurfer.ViewModel
             }
         }
 
+        public Boolean IsBrowserVisible { get; set; } = true;
+
 
         public SortableObservableCollection<TreeNodeViewModel> Hosts
         {
@@ -117,20 +120,131 @@ namespace ForumSurfer.ViewModel
         private SortableObservableCollection<Model.Article> _articles;
         private TreeNodeViewModel _selectedNode;
         private List<Data.Host> _allData;
+        private DialogCoordinator _dialogCoordinator;
         #endregion
 
 
         #region commands
         public ICommand SelectedItemChangedCommand { get; set; }
         public ICommand LoadedCommand { get; set; }
+        public ICommand MarkAllReadCommand { get; set; }
+        public ICommand AddFeedCommand { get; set; }
+        public ICommand MarkFeedReadCommand { get; set; }
+        public ICommand DeleteFeedCommand { get; set; }
+        public ICommand EditFeedCommand { get; set; }
         #endregion
 
         public MainViewModel()
         {
             SelectedItemChangedCommand = new RelayCommand<RoutedPropertyChangedEventArgs<object>>(SelectedItemChanged);
             LoadedCommand = new RelayCommand<RoutedEventArgs>(Loaded);
+            MarkAllReadCommand = new RelayCommand<RoutedEventArgs>(MarkAllRead);
+            AddFeedCommand = new RelayCommand<RoutedEventArgs>(AddFeed);
+            MarkFeedReadCommand = new RelayCommand<RoutedEventArgs>(MarkFeedRead);
+            DeleteFeedCommand = new RelayCommand<RoutedEventArgs>(DeleteFeed);
+            EditFeedCommand = new RelayCommand<RoutedEventArgs>(EditFeed);
+            _dialogCoordinator = DialogCoordinator.Instance;
         }
 
+        private async void EditFeed(RoutedEventArgs e)
+        {
+            if (_selectedNode == null)
+                return;
+            SimpleTreeNodeViewModel tvm = (SimpleTreeNodeViewModel)_selectedNode;
+            Model.Feed selectedFeed = null;
+            if (tvm.Node is Model.Feed)
+            {
+                selectedFeed = (Model.Feed)tvm.Node;
+            }
+            else
+                return;
+
+            // Hides browser otherwise dialog gets behind it
+            IsBrowserVisible = false;
+            RaisePropertyChanged("IsBrowserVisible");
+            var FeedText = await _dialogCoordinator.ShowInputAsync(this, "Edit feed", "Enter the URL of the feed:");
+            if (FeedText != null)
+            {
+                try
+                {
+                    Uri feedUri = new Uri(FeedText);
+                    Data.Feed f = new Data.Feed(selectedFeed);
+                    f.Location = feedUri;
+                    f.UpdateFromUri(true);
+                    f.Save(true);
+                    InitializeData(true);
+                }
+                catch (Exception ex)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(this, "Edit Feed", "Unable to edit feed with the supplied URL: " + ex.Message);
+                }
+            }
+            IsBrowserVisible = true;
+            RaisePropertyChanged("IsBrowserVisible");
+        }
+
+        private async void DeleteFeed(RoutedEventArgs e)
+        {
+            if (_selectedNode == null)
+                return;
+            SimpleTreeNodeViewModel tvm = (SimpleTreeNodeViewModel)_selectedNode;
+            Model.Feed selectedFeed = null;
+            if (tvm.Node is Model.Feed)
+            {
+                selectedFeed = (Model.Feed)tvm.Node;
+            }
+            else
+                return;
+
+
+            // Hides browser otherwise dialog gets behind it
+            IsBrowserVisible = false;
+            RaisePropertyChanged("IsBrowserVisible");
+
+            MessageDialogResult result = await _dialogCoordinator.ShowMessageAsync(this, "Delete Feed", "This action also deletes all downloaded articles and cannot be undone. Are you sure?", MessageDialogStyle.AffirmativeAndNegative);
+
+            if (result == MessageDialogResult.Affirmative)
+            {
+                try
+                {
+                    Data.Feed feed = new Data.Feed(selectedFeed);
+                    feed.Delete();
+                }
+                catch (Exception ex)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(this, "Edit Feed", "Unable to edit feed with the supplied URL: " + ex.Message);
+                }
+            }
+            IsBrowserVisible = true;
+            RaisePropertyChanged("IsBrowserVisible");
+            InitializeData(true);
+        }
+
+        private void MarkFeedRead(RoutedEventArgs e)
+        {
+            if (_selectedNode == null)
+                return;
+            SimpleTreeNodeViewModel tvm = (SimpleTreeNodeViewModel)_selectedNode;
+            if (tvm.Node is Model.Feed)
+            {
+                Model.Feed selectedFeed = (Model.Feed)tvm.Node;
+                Data.Feed df = new Data.Feed(selectedFeed);
+                df.MarkAllRead();
+            }
+            else if (tvm.Node is Model.Host)
+            {
+                Model.Host selectedHost = (Model.Host)tvm.Node;
+                Data.Host dh = new Data.Host(selectedHost);
+                dh.MarkAllRead();
+            }
+            else
+                return;
+
+            foreach (Article a in Articles)
+            {
+                a.Unread = false;
+            }
+        }
 
         private void Loaded(RoutedEventArgs e)
         {
@@ -139,6 +253,42 @@ namespace ForumSurfer.ViewModel
             InitializeData(true);
             _updaterThread = new Thread(() => UpdaterDelegate());
             _updaterThread.Start();
+        }
+
+        private void MarkAllRead(RoutedEventArgs e)
+        {
+            Data.Article.MarkAllRead();
+            foreach(Article a in Articles)
+            {
+                a.Unread = false;
+            }
+        }
+
+        private async void AddFeed(RoutedEventArgs e)
+        {
+            // Hides browser otherwise dialog gets behind it
+            IsBrowserVisible = false;
+            RaisePropertyChanged("IsBrowserVisible");
+            var FeedText = await _dialogCoordinator.ShowInputAsync(this, "Add Feed", "Enter the URL of the feed:");
+            if (FeedText != null)
+            {
+                try
+                {
+                    Uri feedUri = new Uri(FeedText);
+                    Data.Feed f = new Data.Feed();
+                    f.Location = feedUri;
+                    f.UpdateFromUri(true);
+                    f.Save(true);
+                    InitializeData(true);
+                }
+                catch (Exception ex)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(this, "Add Feed", "Unable to create a feed for the supplied URL: " + ex.Message);
+                }
+            }
+            IsBrowserVisible = true;
+            RaisePropertyChanged("IsBrowserVisible");
+
         }
 
         private void SelectedItemChanged(RoutedPropertyChangedEventArgs<object> obj)

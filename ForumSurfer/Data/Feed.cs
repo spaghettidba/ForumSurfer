@@ -51,61 +51,6 @@ namespace ForumSurfer.Data
         }
 
 
-        public static void CreateDatabase()
-        {
-            if (!File.Exists(Repository.DatabasePath))
-                SQLiteConnection.CreateFile(Repository.DatabasePath);
-
-            String sqlCreateTableHosts = @"
-                CREATE TABLE IF NOT EXISTS Hosts (
-                    host_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    uri TEXT NOT NULL UNIQUE
-                )
-            ";
-
-            String sqlCreateTableFeeds = @"
-                CREATE TABLE IF NOT EXISTS Feeds (
-                    feed_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    uri TEXT NOT NULL UNIQUE,
-                    last_update TEXT,
-                    title TEXT NOT NULL,
-                    host_id INTEGER NOT NULL REFERENCES Hosts(host_id)
-                )
-            ";
-
-            String sqlCreateTableArticles = @"
-                CREATE TABLE IF NOT EXISTS Articles (
-                    article_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    uri TEXT NOT NULL UNIQUE,
-                    published_date TEXT,
-                    title TEXT NOT NULL,
-                    unread INTEGER NOT NULL,
-                    feed_id INTEGER NOT NULL REFERENCES Feeds(feed_id)
-                )
-            ";
-
-            using (SQLiteConnection m_dbConnection = new SQLiteConnection(Repository.ConnectionString))
-            {
-                m_dbConnection.Open();
-                SQLiteTransaction tran = m_dbConnection.BeginTransaction();
-                try
-                {
-                    SQLiteCommand command = new SQLiteCommand(sqlCreateTableHosts, m_dbConnection);
-                    command.ExecuteNonQuery();
-                    command = new SQLiteCommand(sqlCreateTableFeeds, m_dbConnection);
-                    command.ExecuteNonQuery();
-                    command = new SQLiteCommand(sqlCreateTableArticles, m_dbConnection);
-                    command.ExecuteNonQuery();
-                    tran.Commit();
-                }
-                catch (Exception)
-                {
-                    tran.Rollback();
-                    throw;
-                }
-            }
-        }
-
 
         public static void UpdateAll()
         {
@@ -156,13 +101,13 @@ namespace ForumSurfer.Data
 
         }
 
-        public Feed(Feed f) : base(f)
+        public Feed(Model.Feed f) : base(f)
         {
 
         }
 
 
-        public void Save()
+        public void Save(Boolean SaveArticles = false)
         {
             String sqlInsertHosts = @"
                 INSERT INTO Hosts (uri) 
@@ -239,8 +184,107 @@ namespace ForumSurfer.Data
                 }
             }
 
+            if (SaveArticles)
+            {
+                foreach(Model.Article a in Articles)
+                {
+                    Article dataArt = new Article(a);
+                    dataArt.Save();
+                }
+            }
+
         }
 
 
+        public void Delete()
+        {
+            String sqlDeleteHosts = @"
+                DELETE 
+                FROM Hosts
+                WHERE host_id NOT IN (
+                    SELECT host_id
+                    FROM Feeds
+                );
+            ";
+
+            String sqlDeleteArticles = @"
+                DELETE
+                FROM Articles
+                WHERE feed_id = (
+                    SELECT feed_id
+                    FROM Feeds 
+                    WHERE uri = $uri
+                );
+            ";
+
+            String sqlDeleteFeed = @"
+                DELETE
+                FROM Feeds
+                WHERE uri = $uri
+            ";
+
+
+
+            using (SQLiteConnection m_dbConnection = new SQLiteConnection(Repository.ConnectionString))
+            {
+                m_dbConnection.Open();
+                SQLiteTransaction tran = m_dbConnection.BeginTransaction();
+                try
+                {
+                    SQLiteCommand command = new SQLiteCommand(sqlDeleteArticles, m_dbConnection);
+                    command.Parameters.AddWithValue("$uri", Location);
+                    command.ExecuteNonQuery();
+
+                    command = new SQLiteCommand(sqlDeleteFeed, m_dbConnection);
+                    command.Parameters.AddWithValue("$uri", Location);
+                    command.ExecuteNonQuery();
+
+                    command = new SQLiteCommand(sqlDeleteHosts, m_dbConnection);
+                    command.ExecuteNonQuery();
+
+                    tran.Commit();
+                }
+                catch (Exception)
+                {
+                    tran.Rollback();
+                    throw;
+                }
+            }
+
+        }
+
+        public void MarkAllRead()
+        {
+            String sql = @"
+                UPDATE Articles
+                SET unread = 0
+                WHERE feed_id = (
+                    SELECT feed_id
+                    FROM Feeds 
+                    WHERE uri = $uri
+                );
+            ";
+
+
+
+            using (SQLiteConnection m_dbConnection = new SQLiteConnection(Repository.ConnectionString))
+            {
+                m_dbConnection.Open();
+                SQLiteTransaction tran = m_dbConnection.BeginTransaction();
+                try
+                {
+                    SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+                    command.Parameters.AddWithValue("$uri", Location);
+                    command.ExecuteNonQuery();
+
+                    tran.Commit();
+                }
+                catch (Exception)
+                {
+                    tran.Rollback();
+                    throw;
+                }
+            }
+        }
     }
 }

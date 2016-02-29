@@ -78,6 +78,22 @@ namespace ForumSurfer.Data
         }
 
 
+        public static void MarkAllRead() {
+            String sqlArticles = @"
+                UPDATE Articles
+                SET unread = 0;
+            ";
+
+            using (SQLiteConnection m_dbConnection = new SQLiteConnection(Repository.ConnectionString))
+            {
+                m_dbConnection.Open();
+                SQLiteCommand command = new SQLiteCommand(sqlArticles, m_dbConnection);
+                command.ExecuteNonQuery();
+            }
+
+        }
+
+
         public Article() : base()
         {
 

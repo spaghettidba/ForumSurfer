@@ -41,7 +41,7 @@ namespace ForumSurfer.Model
         }
 
 
-        public void UpdateFromUri()
+        public void UpdateFromUri(Boolean deriveAttributes = false)
         {
             //WebClient client = new WebClient();
             //using (SyndicationFeedXmlReader x = new SyndicationFeedXmlReader(client.OpenRead(Location)))
@@ -49,6 +49,12 @@ namespace ForumSurfer.Model
             {
                 SyndicationFeed feed = SyndicationFeed.Load(x);
                 x.Close();
+                if (deriveAttributes)
+                {
+                    Title = feed.Title.Text;
+                    LastUpdate = feed.LastUpdatedTime.DateTime;
+                    Host = Location.Host;
+                }
                 foreach (SyndicationItem item in feed.Items)
                 {
                     Article art = new Article();

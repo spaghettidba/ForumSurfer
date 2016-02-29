@@ -38,7 +38,10 @@ namespace ForumSurfer.Data
         public static void CreateDatabase()
         {
             if (!File.Exists(DatabasePath))
+            {
+                Directory.CreateDirectory(DatabaseFolder);
                 SQLiteConnection.CreateFile(DatabasePath);
+            }
 
             String sqlCreateTableHosts = @"
                 CREATE TABLE IF NOT EXISTS Hosts (

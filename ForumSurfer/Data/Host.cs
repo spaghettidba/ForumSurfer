@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,9 +37,48 @@ namespace ForumSurfer.Data
 
         }
 
-        public Host(Host h) : base(h)
+        public Host(Model.Host h) : base(h)
         {
 
+        }
+
+
+        public void MarkAllRead()
+        {
+            String sql = @"
+                UPDATE Articles
+                SET unread = 0
+                WHERE feed_id IN (
+                    SELECT feed_id
+                    FROM Feeds 
+                    WHERE host_id = (
+                        SELECT host_id
+                        FROM Hosts
+                        WHERE uri = $uri
+                    )
+                );
+            ";
+
+
+
+            using (SQLiteConnection m_dbConnection = new SQLiteConnection(Repository.ConnectionString))
+            {
+                m_dbConnection.Open();
+                SQLiteTransaction tran = m_dbConnection.BeginTransaction();
+                try
+                {
+                    SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+                    command.Parameters.AddWithValue("$uri", Title);
+                    command.ExecuteNonQuery();
+
+                    tran.Commit();
+                }
+                catch (Exception)
+                {
+                    tran.Rollback();
+                    throw;
+                }
+            }
         }
     }
 }
