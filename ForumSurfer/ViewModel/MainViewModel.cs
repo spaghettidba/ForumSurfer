@@ -90,7 +90,7 @@ namespace ForumSurfer.ViewModel
             }
         }
 
-        public Boolean IsBrowserVisible { get; set; } = true;
+        public Boolean IsBrowserVisible { get; set; } 
 
 
         public SortableObservableCollection<TreeNodeViewModel> Hosts
@@ -136,6 +136,7 @@ namespace ForumSurfer.ViewModel
 
         public MainViewModel()
         {
+            IsBrowserVisible = true;
             SelectedItemChangedCommand = new RelayCommand<RoutedPropertyChangedEventArgs<object>>(SelectedItemChanged);
             LoadedCommand = new RelayCommand<RoutedEventArgs>(Loaded);
             MarkAllReadCommand = new RelayCommand<RoutedEventArgs>(MarkAllRead);
@@ -165,6 +166,7 @@ namespace ForumSurfer.ViewModel
             var FeedText = await _dialogCoordinator.ShowInputAsync(this, "Edit feed", "Enter the URL of the feed:");
             if (FeedText != null)
             {
+                string errMsg = null;
                 try
                 {
                     Uri feedUri = new Uri(FeedText);
@@ -176,7 +178,11 @@ namespace ForumSurfer.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    await _dialogCoordinator.ShowMessageAsync(this, "Edit Feed", "Unable to edit feed with the supplied URL: " + ex.Message);
+                    errMsg = ex.Message;
+                }
+                if (errMsg != null)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(this, "Edit Feed", "Unable to edit feed with the supplied URL: " + errMsg);
                 }
             }
             IsBrowserVisible = true;
@@ -205,6 +211,7 @@ namespace ForumSurfer.ViewModel
 
             if (result == MessageDialogResult.Affirmative)
             {
+                string errMsg = null;
                 try
                 {
                     Data.Feed feed = new Data.Feed(selectedFeed);
@@ -212,7 +219,11 @@ namespace ForumSurfer.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    await _dialogCoordinator.ShowMessageAsync(this, "Edit Feed", "Unable to edit feed with the supplied URL: " + ex.Message);
+                    errMsg = ex.Message;
+                }
+                if (errMsg != null)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(this, "Edit Feed", "Unable to edit feed with the supplied URL: " + errMsg);
                 }
             }
             IsBrowserVisible = true;
@@ -272,6 +283,7 @@ namespace ForumSurfer.ViewModel
             var FeedText = await _dialogCoordinator.ShowInputAsync(this, "Add Feed", "Enter the URL of the feed:");
             if (FeedText != null)
             {
+                string errMsg = null;
                 try
                 {
                     Uri feedUri = new Uri(FeedText);
@@ -283,7 +295,11 @@ namespace ForumSurfer.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    await _dialogCoordinator.ShowMessageAsync(this, "Add Feed", "Unable to create a feed for the supplied URL: " + ex.Message);
+                    errMsg = ex.Message;
+                }
+                if (errMsg != null)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(this, "Add Feed", "Unable to create a feed for the supplied URL: " + errMsg);
                 }
             }
             IsBrowserVisible = true;
