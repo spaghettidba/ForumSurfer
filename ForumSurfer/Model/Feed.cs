@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.ServiceModel.Syndication;
@@ -45,28 +46,48 @@ namespace ForumSurfer.Model
         {
             //WebClient client = new WebClient();
             //using (SyndicationFeedXmlReader x = new SyndicationFeedXmlReader(client.OpenRead(Location)))
-            using (XmlReader x = XmlReader.Create(Location.ToString()))
-            {
-                SyndicationFeed feed = SyndicationFeed.Load(x);
-                x.Close();
-                if (deriveAttributes)
-                {
-                    Title = feed.Title.Text;
-                    LastUpdate = feed.LastUpdatedTime.DateTime;
-                    Host = Location.Host;
-                }
-                foreach (SyndicationItem item in feed.Items)
-                {
-                    Article art = new Article();
-                    art.ParentFeed = this;
-                    art.Location = item.Links[0].Uri;
-                    art.PublishDate = item.PublishDate.ToLocalTime().DateTime;
-                    art.Title = item.Title.Text;
-                    art.Unread = true;
+            HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(Location.ToString());
+            httpWebRequest.UserAgent = "Googlebot/1.0 (googlebot@googlebot.com http://googlebot.com/)";
 
-                    Articles.Add(art);
-                }
-            }
+            // Use The Default Proxy
+            httpWebRequest.Proxy = System.Net.WebRequest.DefaultWebProxy;
+
+            // Use The Thread's Credentials (Logged In User's Credentials)
+            if (httpWebRequest.Proxy != null)
+                httpWebRequest.Proxy.Credentials = CredentialCache.DefaultCredentials;
+
+            using (HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse())
+            {
+                using (Stream responseStream = httpWebResponse.GetResponseStream())
+                {
+                    using (XmlReader x = XmlReader.Create(responseStream))
+                    {
+
+                        SyndicationFeed feed = SyndicationFeed.Load(x);
+                        x.Close();
+                        if (deriveAttributes)
+                        {
+                            Title = feed.Title.Text;
+                            LastUpdate = feed.LastUpdatedTime.DateTime;
+                            Host = Location.Host;
+                        }
+                        foreach (SyndicationItem item in feed.Items)
+                        {
+                            Article art = new Article();
+                            art.ParentFeed = this;
+                            art.Location = item.Links[0].Uri;
+                            art.PublishDate = item.PublishDate.ToLocalTime().DateTime;
+                            art.Title = item.Title.Text;
+                            art.Unread = true;
+
+                            Articles.Add(art);
+                        }
+
+                    } // using XmlReader
+
+                } // using Stream
+
+            } // using HttpWebResponse
         }
     }
 }
