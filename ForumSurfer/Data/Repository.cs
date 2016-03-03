@@ -11,6 +11,8 @@ namespace ForumSurfer.Data
     public class Repository
     {
         public const String DatabaseName = "ForumSurfer.sqlite";
+        public const String DatabaseVersion = "1.0.1";
+
         public static String DatabaseFolder
         {
             get
@@ -71,6 +73,36 @@ namespace ForumSurfer.Data
                 )
             ";
 
+            String sqlCreateTableOptions = @"
+                CREATE TABLE IF NOT EXISTS GlobalOptions (
+                    option_id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL UNIQUE,
+                    value TEXT NOT NULL
+                )
+            ";
+
+            String sqlCreateTableBoilerplate = @"
+                CREATE TABLE IF NOT EXISTS Boilerplate (
+                    item_id INTEGER PRIMARY KEY,
+                    title TEXT NOT NULL UNIQUE,
+                    value TEXT NOT NULL
+                )
+            ";
+
+            String sqlInsertDatabaseVersion = @"
+                INSERT INTO GlobalOptions (option_id, name, value)
+                SELECT 1, 'database_version', $version
+                WHERE NOT EXISTS (
+                    SELECT *
+                    FROM GlobalOptions
+                    WHERE option_id = 1
+                );
+
+                UPDATE GlobalOptions
+                SET value = $version
+                WHERE option_id = 1;
+            ";
+
             using (SQLiteConnection m_dbConnection = new SQLiteConnection(ConnectionString))
             {
                 m_dbConnection.Open();
@@ -82,6 +114,13 @@ namespace ForumSurfer.Data
                     command = new SQLiteCommand(sqlCreateTableFeeds, m_dbConnection);
                     command.ExecuteNonQuery();
                     command = new SQLiteCommand(sqlCreateTableArticles, m_dbConnection);
+                    command.ExecuteNonQuery();
+                    command = new SQLiteCommand(sqlCreateTableOptions, m_dbConnection);
+                    command.ExecuteNonQuery();
+                    command = new SQLiteCommand(sqlCreateTableBoilerplate, m_dbConnection);
+                    command.ExecuteNonQuery();
+                    command = new SQLiteCommand(sqlInsertDatabaseVersion, m_dbConnection);
+                    command.Parameters.AddWithValue("$version", DatabaseVersion);
                     command.ExecuteNonQuery();
                     tran.Commit();
                 }

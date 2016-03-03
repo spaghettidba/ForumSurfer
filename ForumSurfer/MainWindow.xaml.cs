@@ -13,7 +13,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MahApps.Metro.Controls;
-
+using GalaSoft.MvvmLight.Messaging;
+using ForumSurfer.ViewModel;
+using System.Diagnostics;
 
 namespace ForumSurfer
 {
@@ -26,6 +28,7 @@ namespace ForumSurfer
         {
             Browser.BrowserHelper.SetBrowserFeatureControl();
             InitializeComponent();
+            Messenger.Default.Register<SendBoilerplateMessage>(this, (action) => ReceiveMessage(action));
         }
 
 
@@ -38,6 +41,17 @@ namespace ForumSurfer
         {
             ((TreeViewItem)sender).IsSelected = true;
             e.Handled = true;
+        }
+
+
+        private object ReceiveMessage(SendBoilerplateMessage action)
+        {
+            Debug.Print(action.Text);
+            Clipboard.SetText(action.Text);
+            wbFeed.Focus();
+            dynamic document = wbFeed.Document;
+            document.ExecCommand("Paste", false, null);
+            return null;
         }
     }
 }

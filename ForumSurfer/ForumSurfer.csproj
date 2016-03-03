@@ -114,6 +114,7 @@
     <Compile Include="Collections\SortableObservableCollectionExtension.cs" />
     <Compile Include="Collections\TreeNodeEqualityComparer.cs" />
     <Compile Include="Data\Article.cs" />
+    <Compile Include="Data\Boilerplate.cs" />
     <Compile Include="Data\Feed.cs" />
     <Compile Include="Data\Host.cs" />
     <Compile Include="Data\Repository.cs" />
@@ -123,7 +124,9 @@
     <Compile Include="Model\Host.cs" />
     <Compile Include="Model\RSSNode.cs" />
     <Compile Include="Model\SyndicationFeedXmlReader.cs" />
+    <Compile Include="ViewModel\BoilerplateAnswer.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\SendBoilerplateMessage.cs" />
     <Compile Include="ViewModel\SimpleTreeNodeViewModel.cs" />
     <Compile Include="ViewModel\TreeViewModel.cs" />
     <Compile Include="ViewModel\TreeNodeViewModel.cs" />

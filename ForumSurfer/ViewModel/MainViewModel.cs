@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using MahApps.Metro.Controls.Dialogs;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace ForumSurfer.ViewModel
 {
@@ -110,6 +111,8 @@ namespace ForumSurfer.ViewModel
         }
 
         public int AutoUpdateSeconds = 60;
+
+        public List<BoilerplateAnswer> BoilerplateAnswers { get; set; }
         #endregion
 
         #region privateVars
@@ -262,9 +265,28 @@ namespace ForumSurfer.ViewModel
             _uiContext = SynchronizationContext.Current;
             Data.Repository.CreateDatabase();
             InitializeData(true);
+            InitializeBoilerPlate();
             _updaterThread = new Thread(() => UpdaterDelegate());
             _updaterThread.Start();
         }
+
+        private void InitializeBoilerPlate()
+        {
+            List<Data.Boilerplate> allItems = Data.Boilerplate.LoadAll();
+            BoilerplateAnswers = new List<BoilerplateAnswer>();
+            foreach(Data.Boilerplate item in allItems)
+            {
+                BoilerplateAnswers.Add(new BoilerplateAnswer(item, () => { boilerPlateSelected(item); }));
+            }
+            RaisePropertyChanged("BoilerplateAnswers");
+        }
+
+        private void boilerPlateSelected(Data.Boilerplate item)
+        {
+            var msg = new SendBoilerplateMessage(item.Value);
+            Messenger.Default.Send<SendBoilerplateMessage>(msg);
+
+    }
 
         private void MarkAllRead(RoutedEventArgs e)
         {
