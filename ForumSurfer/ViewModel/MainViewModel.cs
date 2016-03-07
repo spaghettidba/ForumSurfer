@@ -44,7 +44,7 @@ namespace ForumSurfer.ViewModel
         }
 
 
-        private CollectionViewSource _sortedArticles = new CollectionViewSource();
+
         public CollectionViewSource SortedArticles
         {
             get
@@ -91,7 +91,19 @@ namespace ForumSurfer.ViewModel
             }
         }
 
-        public Boolean IsBrowserVisible { get; set; } 
+        public Boolean IsBrowserVisible { get; set; }
+        public Boolean IsOptionsVisible {
+            get
+            {
+                return _optionsVisible;
+            }
+            set
+            {
+                _optionsVisible = value;
+                IsBrowserVisible = !value;
+                RaisePropertyChanged("IsBrowserVisible");
+            }
+        }
 
 
         public SortableObservableCollection<TreeNodeViewModel> Hosts
@@ -110,9 +122,34 @@ namespace ForumSurfer.ViewModel
             }
         }
 
-        public int AutoUpdateSeconds = 60;
+        public int AutoUpdateMinutes { get; set; }
+        public int RetentionDays { get; set; }
 
-        public List<BoilerplateAnswer> BoilerplateAnswers { get; set; }
+        public BoilerplateAnswer SettingsSelectedAnswer {
+            get { return _settingsSelectedAnswer; }
+            set
+            {
+                _settingsSelectedAnswer = value;
+                _settingsSelectedAnswer_text = _settingsSelectedAnswer.Text;
+                _settingsSelectedAnswer_title = _settingsSelectedAnswer.Title;
+                RaisePropertyChanged("SettingsSelectedAnswer_Title");
+                RaisePropertyChanged("SettingsSelectedAnswer_Text");
+            }
+        }
+
+        public String SettingsSelectedAnswer_Text
+        {
+            get { return _settingsSelectedAnswer_text; }
+            set { _settingsSelectedAnswer_text = value; }
+        }
+
+        public String SettingsSelectedAnswer_Title
+        {
+            get { return _settingsSelectedAnswer_title; }
+            set { _settingsSelectedAnswer_title = value; }
+        }
+
+        public ObservableCollection<BoilerplateAnswer> BoilerplateAnswers { get; set; }
         #endregion
 
         #region privateVars
@@ -124,6 +161,11 @@ namespace ForumSurfer.ViewModel
         private TreeNodeViewModel _selectedNode;
         private List<Data.Host> _allData;
         private DialogCoordinator _dialogCoordinator;
+        private bool _optionsVisible = false;
+        private CollectionViewSource _sortedArticles = new CollectionViewSource();
+        private BoilerplateAnswer _settingsSelectedAnswer;
+        private String _settingsSelectedAnswer_text;
+        private String _settingsSelectedAnswer_title;
         #endregion
 
 
@@ -135,11 +177,16 @@ namespace ForumSurfer.ViewModel
         public ICommand MarkFeedReadCommand { get; set; }
         public ICommand DeleteFeedCommand { get; set; }
         public ICommand EditFeedCommand { get; set; }
+        public ICommand ShowOptionsCommand { get; set; }
         #endregion
 
         public MainViewModel()
         {
+            AutoUpdateMinutes = 1;
+            RetentionDays = 30;
+            SettingsSelectedAnswer = new BoilerplateAnswer(new Data.Boilerplate(),null);
             IsBrowserVisible = true;
+            IsOptionsVisible = false;
             SelectedItemChangedCommand = new RelayCommand<RoutedPropertyChangedEventArgs<object>>(SelectedItemChanged);
             LoadedCommand = new RelayCommand<RoutedEventArgs>(Loaded);
             MarkAllReadCommand = new RelayCommand<RoutedEventArgs>(MarkAllRead);
@@ -147,7 +194,14 @@ namespace ForumSurfer.ViewModel
             MarkFeedReadCommand = new RelayCommand<RoutedEventArgs>(MarkFeedRead);
             DeleteFeedCommand = new RelayCommand<RoutedEventArgs>(DeleteFeed);
             EditFeedCommand = new RelayCommand<RoutedEventArgs>(EditFeed);
+            ShowOptionsCommand = new RelayCommand<RoutedEventArgs>(ShowOptions);
             _dialogCoordinator = DialogCoordinator.Instance;
+        }
+
+        private void ShowOptions(RoutedEventArgs obj)
+        {
+            IsOptionsVisible = !IsOptionsVisible;
+            RaisePropertyChanged("IsOptionsVisible");
         }
 
         private async void EditFeed(RoutedEventArgs e)
@@ -273,7 +327,7 @@ namespace ForumSurfer.ViewModel
         private void InitializeBoilerPlate()
         {
             List<Data.Boilerplate> allItems = Data.Boilerplate.LoadAll();
-            BoilerplateAnswers = new List<BoilerplateAnswer>();
+            BoilerplateAnswers = new ObservableCollection<BoilerplateAnswer>();
             foreach(Data.Boilerplate item in allItems)
             {
                 BoilerplateAnswers.Add(new BoilerplateAnswer(item, () => { boilerPlateSelected(item); }));
@@ -283,17 +337,19 @@ namespace ForumSurfer.ViewModel
 
         private void boilerPlateSelected(Data.Boilerplate item)
         {
-            var msg = new SendBoilerplateMessage(item.Value);
+            var msg = new SendBoilerplateMessage(item.Text);
             Messenger.Default.Send<SendBoilerplateMessage>(msg);
-
-    }
+        }
 
         private void MarkAllRead(RoutedEventArgs e)
         {
             Data.Article.MarkAllRead();
-            foreach(Article a in Articles)
+            if (Articles != null)
             {
-                a.Unread = false;
+                foreach (Article a in Articles)
+                {
+                    a.Unread = false;
+                }
             }
         }
 
@@ -466,7 +522,7 @@ namespace ForumSurfer.ViewModel
                         }
                     });
                 }
-                for(int i =0;i< AutoUpdateSeconds * 100; i++)
+                for(int i =0;i< AutoUpdateMinutes * 6000; i++)
                 {
                     Thread.Sleep(10);
                     if (!_uiThread.IsAlive)

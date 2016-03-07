@@ -7,11 +7,20 @@ using System.Threading.Tasks;
 
 namespace ForumSurfer.Data
 {
-    public class Boilerplate
+    public class Boilerplate : Model.BindableBase
     {
+        private String _title;
+        private String _text;
+
         public long Id { get; private set; }
-        public String Title { get; set; }
-        public String Value { get; set; }
+        public String Title {
+            get { return _title; }
+            set { SetProperty(ref _title, value);  }
+        }
+        public String Text {
+            get { return _text; }
+            set { SetProperty(ref _text, value); }
+        }
 
         public static List<Boilerplate> LoadAll()
         {
@@ -32,7 +41,7 @@ namespace ForumSurfer.Data
                     {
                         Boilerplate boilerplate = new Boilerplate();
                         boilerplate.Title = reader["title"].ToString();
-                        boilerplate.Value = reader["value"].ToString();
+                        boilerplate.Text = reader["value"].ToString();
                         boilerplate.Id = Int32.Parse(reader["item_id"].ToString());
                         results.Add(boilerplate);
                     }
@@ -76,7 +85,7 @@ namespace ForumSurfer.Data
                 {
                     SQLiteCommand command = new SQLiteCommand(sqlInsert, m_dbConnection);
                     command.Parameters.AddWithValue("$title", Title);
-                    command.Parameters.AddWithValue("$value", Value);
+                    command.Parameters.AddWithValue("$value", Text);
                     int howMany = command.ExecuteNonQuery();
 
                     if(howMany > 0)
@@ -89,7 +98,7 @@ namespace ForumSurfer.Data
                     else
                     {
                         command = new SQLiteCommand(sqlUpdate, m_dbConnection);
-                        command.Parameters.AddWithValue("$value", Value);
+                        command.Parameters.AddWithValue("$value", Text);
                         command.ExecuteNonQuery();
                     }
 
