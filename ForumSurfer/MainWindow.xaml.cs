@@ -46,11 +46,18 @@ namespace ForumSurfer
 
         private object ReceiveMessage(SendBoilerplateMessage action)
         {
-            Debug.Print(action.Text);
-            Clipboard.SetText(action.Text);
-            wbFeed.Focus();
-            dynamic document = wbFeed.Document;
-            document.ExecCommand("Paste", false, null);
+            try
+            {
+                Debug.Print(action.Text);
+                Clipboard.SetText(action.Text);
+                wbFeed.Focus();
+                dynamic document = wbFeed.Document;
+                document.ExecCommand("Paste", false, null);
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
             return null;
         }
     }
