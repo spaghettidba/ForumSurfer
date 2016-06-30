@@ -51,7 +51,9 @@ namespace ForumSurfer
                 Debug.Print(action.Text);
                 Clipboard.SetText(action.Text);
                 wbFeed.Focus();
+                System.Threading.Thread.Sleep(100);
                 dynamic document = wbFeed.Document;
+                System.Threading.Thread.Sleep(50);
                 document.ExecCommand("Paste", false, null);
             }
             catch (Exception)
