@@ -150,6 +150,7 @@ namespace ForumSurfer.ViewModel
         }
 
         public ObservableCollection<BoilerplateAnswer> BoilerplateAnswers { get; set; }
+        public String StatusMessage { get; set; }
         #endregion
 
         #region privateVars
@@ -320,6 +321,8 @@ namespace ForumSurfer.ViewModel
             Data.Repository.CreateDatabase();
             InitializeData(true);
             InitializeBoilerPlate();
+            Thread.CurrentThread.Name = "UI";
+            Debug.Print(Thread.CurrentThread.Name);
             _updaterThread = new Thread(() => UpdaterDelegate());
             _updaterThread.Start();
         }
@@ -439,10 +442,13 @@ namespace ForumSurfer.ViewModel
 
         private void InitializeData(Boolean refreshTreeView)
         {
+            SetStatusMessage("Loading");
             //
             // Read from Database
             //
             _allData = Data.Host.LoadAll();
+
+            SetStatusMessage("Loaded");
 
             //
             // Update the treeview
@@ -459,6 +465,7 @@ namespace ForumSurfer.ViewModel
                 SimpleTreeNodeViewModel tvm = (SimpleTreeNodeViewModel)_selectedNode;
                 if (tvm.Node is Model.Feed)
                 {
+                    SetStatusMessage("Updating Articles (feed)... ");
                     Model.Feed selectedFeed = (Model.Feed)tvm.Node;
                     // Find the feed and add the Articles
                     foreach(Host h in _allData)
@@ -466,61 +473,85 @@ namespace ForumSurfer.ViewModel
                         Feed f = h.Feeds.FirstOrDefault(el => el.Location.Equals(selectedFeed.Location));
                         if(f != null)
                         {
-                            Articles.AddMissing(f.Articles, new ArticleEqualityComparer());
+                            Articles.AddMissing(f.Articles, new ArticleEqualityComparer(), _uiContext);
                         }
                     }
 
                 }
                 else if (tvm.Node is Model.Host)
                 {
+                    SetStatusMessage("Updating Articles (host)... ");
                     Model.Host selectedHost = (Model.Host)tvm.Node;
                     // Find the host and add the Articels
                     Model.Host h = _allData.FirstOrDefault(el => el.Location.Equals(selectedHost.Location));
                     foreach (Model.Feed feed in h.Feeds)
                     {
-                        Articles.AddMissing(feed.Articles, new ArticleEqualityComparer());
+                        Articles.AddMissing(feed.Articles, new ArticleEqualityComparer(), _uiContext);
                     }
                 }
                 else
                 {
-                    foreach(Model.Host h in _allData)
+                    SetStatusMessage("Updating Articles (article)... ");
+                    foreach (Model.Host h in _allData)
                     {
                         foreach (Model.Feed feed in h.Feeds)
                         {
-                            Articles.AddMissing(feed.Articles, new ArticleEqualityComparer());
+                            Articles.AddMissing(feed.Articles, new ArticleEqualityComparer(),_uiContext);
                         }
                     }
                 }
-                SortedArticles.SortDescriptions.Clear(); // Clear all 
-                SortedArticles.SortDescriptions.Add(new SortDescription("SortKey", ListSortDirection.Descending)); // Sort descending by "PropertyName"
-                //Articles.OrderByDescending(el => el.SortKey);
             }
-            //RaisePropertyChanged("Articles");
+            if (refreshTreeView)
+            {
+                SetStatusMessage("Refreshing Article list");
+                SetSortOrder();
+            }
+            SetStatusMessage("Ready");
         }
+
+
+        public void SetSortOrder()
+        {
+            SortedArticles.SortDescriptions.Clear(); // Clear all 
+            SortedArticles.SortDescriptions.Add(new SortDescription("SortKey", ListSortDirection.Descending)); // Sort descending by "PropertyName"
+        }
+
+
 
 
         private void UpdateData()
         {
-            InitializeData(false);
+            try
+            {
+                InitializeData(false);
+            }
+            catch(Exception e)
+            {
+                StatusMessage = e.StackTrace;
+            }
         }
 
 
-        private void UpdaterDelegate()
+        private async void UpdaterDelegate()
         {
             Task databaseTask = null;
             while(_uiThread.IsAlive)
             {
-
+                Debug.Print(Thread.CurrentThread.Name);
                 if (databaseTask == null || databaseTask.IsCompleted)
                 {
-                    databaseTask = Task.Run(() =>
-                    {
-                        Data.Feed.UpdateAll();
-                        if (_uiContext != null)
-                        {
-                            _uiContext.Send(DivideByZeroException => UpdateData(), null);
-                        }
-                    });
+                     databaseTask = Task.Factory.StartNew(() =>
+                     {
+                         Data.Feed.UpdateAll();
+                         if (_uiContext != null)
+                         {
+                             UpdateData();
+                             _uiContext.Send(DivideByZeroException => SetSortOrder(), null);
+                         }
+                     }, 
+                     CancellationToken.None,
+                     TaskCreationOptions.None,
+                     TaskScheduler.Default);
                 }
                 for(int i =0;i< AutoUpdateMinutes * 6000; i++)
                 {
@@ -555,6 +586,13 @@ namespace ForumSurfer.ViewModel
         {
             if (e.PropertyName == "Unread")
                 Debug.Print("Unread has changed!");
+        }
+
+        void SetStatusMessage(String s)
+        {
+            Debug.Print(DateTime.Now + " " + s);
+            StatusMessage = s;
+            RaisePropertyChanged("StatusMessage");
         }
     }
 }

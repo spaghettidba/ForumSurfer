@@ -150,164 +150,187 @@
     </Controls:MetroWindow.Flyouts>
     
     <DockPanel>
-        <Grid DockPanel.Dock="Top" Height="50" Background="#45464B">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <DockPanel VerticalAlignment="Center" Margin="5">
-                <Image Source="Icons/ForumSurferLogo_Xsmall.png" DockPanel.Dock="Left" />
-                <TextBlock Text="FORUM SURFER" DockPanel.Dock="Right" Margin="5">
-                    <TextBlock.Style>
-                        <Style>
-                            <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
-                            <Setter Property="TextBlock.FontSize" Value="22" />
-                            <Setter Property="TextBlock.Foreground" Value="#CECECE" />
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </DockPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Focusable="False" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Foreground="White" Content="Mark all as Read" Command="{Binding MarkAllReadCommand}"/>
-                <Controls:DropDownButton Style="{StaticResource DropDownStyleKey}" Foreground="White" VerticalContentAlignment="Center" Width="60" DisplayMemberPath="Title" Icon="{StaticResource BoilerplateIcon}" ItemsSource="{Binding BoilerplateAnswers}" >
-                    <Controls:DropDownButton.ItemContainerStyle>
-                        <Style TargetType="MenuItem">
-                            <!--<Setter Property="Header" Value="{Binding Path=DisplayMemberPath}"/>-->
-                            <Setter Property="Height" Value="30"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                            <Setter Property="MaxWidth" Value="200"/>
-                            <Setter Property="Padding" Value="0,5,0,0"/>
-                            <Setter Property="Command" Value="{Binding MenuActionCommand}"/>
-                        </Style>
-                    </Controls:DropDownButton.ItemContainerStyle>
-                </Controls:DropDownButton>
-                <Button Focusable="False" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Foreground="White" Width="50" Content="{StaticResource AddFeedIcon}" ToolTip="Add Feed" Command="{Binding AddFeedCommand}"/>
-                <Button Focusable="False" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Foreground="White" Width="50" Content="{StaticResource SettingsIcon}" ToolTip="Settings" Command="{Binding ShowOptionsCommand}"/>
-            </StackPanel>
-        </Grid>
-        <Grid x:Name="MainGrid" DockPanel.Dock="Bottom">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="1.5*" />
-                <ColumnDefinition Width="4*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <TreeView x:Name="Feeds" DataContext="{Binding Path=TreeModel}" ItemsSource="{Binding Items, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="SelectedItemChanged">
-                        <command:EventToCommand Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.SelectedItemChangedCommand}" PassEventArgsToCommand="True"></command:EventToCommand>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            
-                <!-- Controls the style of the root node only -->
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="TreeViewItem" BasedOn="{StaticResource TreeStyle}">
-                        <Setter Property="TreeViewItem.IsExpanded" Value="True"/>
-                    </Style>
-                </TreeView.ItemContainerStyle>
 
-                <TreeView.Resources>
-                    <HierarchicalDataTemplate DataType="{x:Type local:SimpleTreeNodeViewModel}" ItemsSource="{Binding Children}">
-                        <!-- Controls the style of the children nodes-->
-                        <HierarchicalDataTemplate.ItemContainerStyle>
-                            <Style TargetType="TreeViewItem">
-                                <Setter Property="TreeViewItem.IsExpanded" Value="True" />
-                                <Setter Property="TreeViewItem.IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
-                                <Setter Property="TreeViewItem.FontFamily" Value="Segoe UI"/>
-                                <Setter Property="TreeViewItem.FontSize" Value="15" />
-                                <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView"/>
-                                <EventSetter Event="MouseRightButtonDown" Handler="TreeViewItem_MouseRightButtonDown" />
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <DockPanel DockPanel.Dock="Top">
+            <Grid DockPanel.Dock="Top" Height="50" Background="#45464B">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <DockPanel VerticalAlignment="Center" Margin="5">
+                    <Image Source="Icons/ForumSurferLogo_Xsmall.png" DockPanel.Dock="Left" />
+                    <TextBlock Text="FORUM SURFER" DockPanel.Dock="Right" Margin="5">
+                        <TextBlock.Style>
+                            <Style>
+                                <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+                                <Setter Property="TextBlock.FontSize" Value="22" />
+                                <Setter Property="TextBlock.Foreground" Value="#CECECE" />
                             </Style>
-                        </HierarchicalDataTemplate.ItemContainerStyle>
-                        <TextBlock Text="{Binding Title}">
-                            <TextBlock.Style>
-                                <Style>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeViewItem}}, FallbackValue=False}" Value="True">
-                                            <Setter Property="TextBlock.FontWeight" Value="Bold" />
-                                            <Setter Property="TextBlock.Background" Value="{DynamicResource AccentColorBrush}" />
-                                            <Setter Property="TextBlock.Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </DockPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Focusable="False" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Foreground="White" Content="Mark all as Read" Command="{Binding MarkAllReadCommand}"/>
+                    <Controls:DropDownButton Style="{StaticResource DropDownStyleKey}" Foreground="White" VerticalContentAlignment="Center" Width="60" DisplayMemberPath="Title" Icon="{StaticResource BoilerplateIcon}" ItemsSource="{Binding BoilerplateAnswers}" >
+                        <Controls:DropDownButton.ItemContainerStyle>
+                            <Style TargetType="MenuItem">
+                                <!--<Setter Property="Header" Value="{Binding Path=DisplayMemberPath}"/>-->
+                                <Setter Property="Height" Value="30"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="MaxWidth" Value="200"/>
+                                <Setter Property="Padding" Value="0,5,0,0"/>
+                                <Setter Property="Command" Value="{Binding MenuActionCommand}"/>
+                            </Style>
+                        </Controls:DropDownButton.ItemContainerStyle>
+                    </Controls:DropDownButton>
+                    <Button Focusable="False" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Foreground="White" Width="50" Content="{StaticResource AddFeedIcon}" ToolTip="Add Feed" Command="{Binding AddFeedCommand}"/>
+                    <Button Focusable="False" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Foreground="White" Width="50" Content="{StaticResource SettingsIcon}" ToolTip="Settings" Command="{Binding ShowOptionsCommand}"/>
+                </StackPanel>
+            </Grid>
+            <Grid x:Name="MainGrid" DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="1.5*" />
+                    <ColumnDefinition Width="4*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TreeView x:Name="Feeds" DataContext="{Binding Path=TreeModel}" ItemsSource="{Binding Items, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectedItemChanged">
+                            <command:EventToCommand Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.SelectedItemChangedCommand}" PassEventArgsToCommand="True"></command:EventToCommand>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+
+                    <!-- Controls the style of the root node only -->
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem" BasedOn="{StaticResource TreeStyle}">
+                            <Setter Property="TreeViewItem.IsExpanded" Value="True"/>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+
+                    <TreeView.Resources>
+                        <HierarchicalDataTemplate DataType="{x:Type local:SimpleTreeNodeViewModel}" ItemsSource="{Binding Children}">
+                            <!-- Controls the style of the children nodes-->
+                            <HierarchicalDataTemplate.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="TreeViewItem.IsExpanded" Value="True" />
+                                    <Setter Property="TreeViewItem.IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
+                                    <Setter Property="TreeViewItem.FontFamily" Value="Segoe UI"/>
+                                    <Setter Property="TreeViewItem.FontSize" Value="15" />
+                                    <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView"/>
+                                    <EventSetter Event="MouseRightButtonDown" Handler="TreeViewItem_MouseRightButtonDown" />
                                 </Style>
-                            </TextBlock.Style>
-                            <TextBlock.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Mark As Read" Command="{Binding Path=DataContext.MarkFeedReadCommand, Source={x:Reference MainWin}}" />
-                                    <MenuItem Header="Delete" Command="{Binding Path=DataContext.DeleteFeedCommand, Source={x:Reference MainWin}}" />
-                                    <MenuItem Header="Edit" Command="{Binding Path=DataContext.EditFeedCommand, Source={x:Reference MainWin}}" />
-                                </ContextMenu>
-                            </TextBlock.ContextMenu>
-                        </TextBlock>
-                    </HierarchicalDataTemplate>
-                </TreeView.Resources>
-            </TreeView>
-
-
-            <ListBox Grid.Column="2" Name="ArticlesList" ItemsSource="{Binding SortedArticles.View, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" SelectedItem="{Binding Path=SelectedArticle, Mode=TwoWay}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="60" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="{Binding DisplayDate}">
+                            </HierarchicalDataTemplate.ItemContainerStyle>
+                            <TextBlock Text="{Binding Title}">
                                 <TextBlock.Style>
                                     <Style>
-                                        <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
-                                        <Setter Property="TextBlock.FontSize" Value="12" />
-                                        <Setter Property="TextBlock.Foreground" Value="Gray" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeViewItem}}, FallbackValue=False}" Value="True">
+                                                <Setter Property="TextBlock.FontWeight" Value="Bold" />
+                                                <Setter Property="TextBlock.Background" Value="{DynamicResource AccentColorBrush}" />
+                                                <Setter Property="TextBlock.Foreground" Value="White" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
                                     </Style>
                                 </TextBlock.Style>
+                                <TextBlock.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Mark As Read" Command="{Binding Path=DataContext.MarkFeedReadCommand, Source={x:Reference MainWin}}" />
+                                        <MenuItem Header="Delete" Command="{Binding Path=DataContext.DeleteFeedCommand, Source={x:Reference MainWin}}" />
+                                        <MenuItem Header="Edit" Command="{Binding Path=DataContext.EditFeedCommand, Source={x:Reference MainWin}}" />
+                                    </ContextMenu>
+                                </TextBlock.ContextMenu>
                             </TextBlock>
-                            <DockPanel Grid.Column="1" HorizontalAlignment="Left">
-                                <TextBlock DockPanel.Dock="Top" Text="{Binding ParentFeedName}" TextTrimming="CharacterEllipsis">
+                        </HierarchicalDataTemplate>
+                    </TreeView.Resources>
+                </TreeView>
+
+
+                <ListBox Grid.Column="2" Name="ArticlesList" ItemsSource="{Binding SortedArticles.View, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" SelectedItem="{Binding Path=SelectedArticle, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="{Binding DisplayDate}">
                                     <TextBlock.Style>
                                         <Style>
                                             <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
                                             <Setter Property="TextBlock.FontSize" Value="12" />
-                                            <Setter Property="TextBlock.Foreground" Value="#41B1E1" />
+                                            <Setter Property="TextBlock.Foreground" Value="Gray" />
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
+                                <DockPanel Grid.Column="1" HorizontalAlignment="Left">
+                                    <TextBlock DockPanel.Dock="Top" Text="{Binding ParentFeedName}" TextTrimming="CharacterEllipsis">
+                                        <TextBlock.Style>
+                                            <Style>
+                                                <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+                                                <Setter Property="TextBlock.FontSize" Value="12" />
+                                                <Setter Property="TextBlock.Foreground" Value="#41B1E1" />
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
 
-                                <TextBlock DockPanel.Dock="Bottom" Text="{Binding Title}" TextTrimming="CharacterEllipsis">
-                                    <TextBlock.Style>
-                                        <Style>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Unread}" Value="True">
-                                                    <Setter Property="TextBlock.FontWeight" Value="Bold" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                            <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
-                                            <Setter Property="TextBlock.FontSize" Value="15" />
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </DockPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                                    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Title}" TextTrimming="CharacterEllipsis">
+                                        <TextBlock.Style>
+                                            <Style>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Unread}" Value="True">
+                                                        <Setter Property="TextBlock.FontWeight" Value="Bold" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                                <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+                                                <Setter Property="TextBlock.FontSize" Value="15" />
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DockPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
 
 
-            <WebBrowser browser:WebBrowserHelper.LinkSource="{Binding Path=SelectedArticle.Location}" Grid.Column="3" Name="wbFeed" Visibility="{Binding Path=IsBrowserVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-            
-            </WebBrowser>
+                <WebBrowser browser:WebBrowserHelper.LinkSource="{Binding Path=SelectedArticle.Location}" Grid.Column="3" Name="wbFeed" Visibility="{Binding Path=IsBrowserVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+
+                </WebBrowser>
+
+            </Grid>
+        </DockPanel>
+      
         
-        </Grid>
-
+        
     </DockPanel>
 
 </Controls:MetroWindow>

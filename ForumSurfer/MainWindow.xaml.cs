@@ -16,6 +16,7 @@ using MahApps.Metro.Controls;
 using GalaSoft.MvvmLight.Messaging;
 using ForumSurfer.ViewModel;
 using System.Diagnostics;
+using System.Windows.Threading;
 
 namespace ForumSurfer
 {
@@ -24,6 +25,7 @@ namespace ForumSurfer
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
+
         public MainWindow()
         {
             Browser.BrowserHelper.SetBrowserFeatureControl();
@@ -48,17 +50,49 @@ namespace ForumSurfer
         {
             try
             {
-                Debug.Print(action.Text);
                 Clipboard.SetText(action.Text);
+
+                Debug.Print(@"///////////////////////// BEGIN SEND /////////////////////////");
+                Debug.Print(action.Text);
                 wbFeed.Focus();
-                System.Threading.Thread.Sleep(100);
                 dynamic document = wbFeed.Document;
-                System.Threading.Thread.Sleep(50);
-                document.ExecCommand("Paste", false, null);
+                if (document != null)
+                {
+                    try
+                    {
+                        // HACK: I don't need these properties, but evaluating them
+                        //       before accessing other properties I need seems to 
+                        //       avoid issues with dynamic properties thru COM.
+                        //       Go figure...
+                        string chset = document.charset;
+                        dynamic el = document.ActiveElement;
+                        // /HACK
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.Print(ex.StackTrace);
+                        string chset = document.charset;
+                    }
+
+                    System.Threading.Thread.Sleep(100);
+                    if(document.ActiveElement != null)
+                        document.ActiveElement.Focus();
+                    document.ExecCommand("Paste", false, null);
+                }
+                else
+                {
+                    Debug.Print(@"-------- SORRY, NO DOCUMENT --------------");
+                }
+
+                Debug.Print(@"\\\\\\\\\\\\\\\\\\\\\\\\\ END SEND \\\\\\\\\\\\\\\\\\\\\\\\\");
+
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // Ignore
+                Debug.Print(e.StackTrace);
+                Debug.Print(@"------------------------- EXCEPTION SEND -------------------------");
+
             }
             return null;
         }
