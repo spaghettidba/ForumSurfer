@@ -52,7 +52,7 @@ namespace ForumSurfer.Data
 
 
 
-        public static void UpdateAll()
+        public static void UpdateAll(int retentionDays)
         {
             List<Feed> feeds = LoadAll();
             HashSet<Uri> existingArticles = new HashSet<Uri>();
@@ -70,7 +70,7 @@ namespace ForumSurfer.Data
                     feed.Articles.Clear();
                     try
                     {
-                        feed.UpdateFromUri();
+                        feed.UpdateFromUri(false, retentionDays);
                     }
                     catch(Exception e)
                     {
@@ -92,6 +92,7 @@ namespace ForumSurfer.Data
                         art.Save();
                     }
                 }
+                feed.Save();
             }
         }
 
@@ -144,6 +145,13 @@ namespace ForumSurfer.Data
                 );
             ";
 
+            String sqlUpdateFeed = @"
+                UPDATE Feeds
+                SET last_update = $last_update,
+                    title = $title
+                WHERE uri = $uri;
+            ";
+
             String sqlGetFeed = @"
                 SELECT feed_id
                 FROM Feeds 
@@ -170,7 +178,16 @@ namespace ForumSurfer.Data
                     command.Parameters.AddWithValue("$last_update", LastUpdate.ToString("s"));
                     command.Parameters.AddWithValue("$title", Title);
                     command.Parameters.AddWithValue("$host_id", host_id);
-                    command.ExecuteNonQuery();
+                    int inserted = command.ExecuteNonQuery();
+
+                    if(inserted <= 0)
+                    {
+                        command = new SQLiteCommand(sqlUpdateFeed, m_dbConnection);
+                        command.Parameters.AddWithValue("$uri", Location.ToString());
+                        command.Parameters.AddWithValue("$last_update", LastUpdate.ToString("s"));
+                        command.Parameters.AddWithValue("$title", Title);
+                        command.ExecuteNonQuery();
+                    }
 
                     command = new SQLiteCommand(sqlGetFeed, m_dbConnection);
                     command.Parameters.AddWithValue("$uri", Location.ToString());

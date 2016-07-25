@@ -42,7 +42,7 @@ namespace ForumSurfer.Model
         }
 
 
-        public void UpdateFromUri(Boolean deriveAttributes = false)
+        public void UpdateFromUri(Boolean deriveAttributes = false, int retentionDays = -1)
         {
             //WebClient client = new WebClient();
             //using (SyndicationFeedXmlReader x = new SyndicationFeedXmlReader(client.OpenRead(Location)))
@@ -71,6 +71,17 @@ namespace ForumSurfer.Model
                             LastUpdate = feed.LastUpdatedTime.DateTime;
                             Host = Location.Host;
                         }
+
+                        //Date unchanged
+                        if(LastUpdate.Equals(feed.LastUpdatedTime.DateTime))
+                        {
+                            LastUpdate = DateTime.Now;
+                        }
+                        else
+                        {
+                            LastUpdate = feed.LastUpdatedTime.DateTime;
+                        }
+
                         foreach (SyndicationItem item in feed.Items)
                         {
                             Article art = new Article();
@@ -80,7 +91,31 @@ namespace ForumSurfer.Model
                             art.Title = item.Title.Text;
                             art.Unread = true;
 
-                            Articles.Add(art);
+                            // Some dates don't parse correctly (connect.microsoft.com for instance)
+                            if (art.PublishDate.Date.Equals(new DateTime(1, 1, 1)))
+                            { 
+                                art.PublishDate = item.LastUpdatedTime.ToLocalTime().DateTime;
+                                if (art.PublishDate.Date.Equals(new DateTime(1, 1, 1)))
+                                {
+                                    art.PublishDate = LastUpdate;
+                                }
+                            }
+
+                            // load article from feed only when within retention
+                            if (retentionDays > 0 && art.PublishDate >= DateTime.Now.AddDays(-1 * retentionDays))
+                                Articles.Add(art);
+
+
+                            // Dates older than 180 days are likely parsing errors too
+                            // I can't evaluate the retention policy after setting
+                            // the date to the feed's last update, because some
+                            // sites "resurrect" older posts and put them in the feed.
+                            if (art.PublishDate < DateTime.Now.AddDays(-180))
+                            {
+                                art.PublishDate = item.LastUpdatedTime.ToLocalTime().DateTime;
+
+                                art.PublishDate = LastUpdate;
+                            }
                         }
 
                     } // using XmlReader

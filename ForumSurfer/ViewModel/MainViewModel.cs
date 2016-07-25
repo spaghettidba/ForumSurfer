@@ -122,8 +122,27 @@ namespace ForumSurfer.ViewModel
             }
         }
 
-        public int AutoUpdateMinutes { get; set; }
-        public int RetentionDays { get; set; }
+        private Data.Settings settings = new Data.Settings();
+
+        public int AutoUpdateMinutes
+        {
+            get { return settings.AutoUpdateMinutes; }
+            set
+            {
+                settings.AutoUpdateMinutes = value;
+                settings.Save();
+            }
+        }
+        public int RetentionDays
+        {
+            get { return settings.RetentionDays; }
+            set
+            {
+                settings.RetentionDays = value;
+                settings.Save();
+            }
+            
+        }
 
         public BoilerplateAnswer SettingsSelectedAnswer {
             get { return _settingsSelectedAnswer; }
@@ -183,8 +202,6 @@ namespace ForumSurfer.ViewModel
 
         public MainViewModel()
         {
-            AutoUpdateMinutes = 1;
-            RetentionDays = 30;
             SettingsSelectedAnswer = new BoilerplateAnswer(new Data.Boilerplate(),null);
             IsBrowserVisible = true;
             IsOptionsVisible = false;
@@ -230,7 +247,7 @@ namespace ForumSurfer.ViewModel
                     Uri feedUri = new Uri(FeedText);
                     Data.Feed f = new Data.Feed(selectedFeed);
                     f.Location = feedUri;
-                    f.UpdateFromUri(true);
+                    f.UpdateFromUri(true, RetentionDays);
                     f.Save(true);
                     InitializeData(true);
                 }
@@ -319,8 +336,15 @@ namespace ForumSurfer.ViewModel
         {
             _uiContext = SynchronizationContext.Current;
             Data.Repository.CreateDatabase();
+
+            settings.Load();
+            RaisePropertyChanged("AutoUpdateMinutes");
+            RaisePropertyChanged("RetentionDays");
+
+            Data.Article.PurgeOlderItems(RetentionDays);
             InitializeData(true);
             InitializeBoilerPlate();
+
             Thread.CurrentThread.Name = "UI";
             Debug.Print(Thread.CurrentThread.Name);
             _updaterThread = new Thread(() => UpdaterDelegate());
@@ -370,7 +394,7 @@ namespace ForumSurfer.ViewModel
                     Uri feedUri = new Uri(FeedText);
                     Data.Feed f = new Data.Feed();
                     f.Location = feedUri;
-                    f.UpdateFromUri(true);
+                    f.UpdateFromUri(true, RetentionDays);
                     f.Save(true);
                     InitializeData(true);
                 }
@@ -455,7 +479,9 @@ namespace ForumSurfer.ViewModel
             //
 
             if (refreshTreeView)
+            {
                 RaisePropertyChanged("TreeModel");
+            }
 
             //
             // Update articles
@@ -532,7 +558,7 @@ namespace ForumSurfer.ViewModel
         }
 
 
-        private async void UpdaterDelegate()
+        private void UpdaterDelegate()
         {
             Task databaseTask = null;
             while(_uiThread.IsAlive)
@@ -542,7 +568,7 @@ namespace ForumSurfer.ViewModel
                 {
                      databaseTask = Task.Factory.StartNew(() =>
                      {
-                         Data.Feed.UpdateAll();
+                         Data.Feed.UpdateAll(RetentionDays);
                          if (_uiContext != null)
                          {
                              UpdateData();

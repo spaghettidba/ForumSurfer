@@ -94,6 +94,25 @@ namespace ForumSurfer.Data
         }
 
 
+        public static void PurgeOlderItems(int retentionDays)
+        {
+            String sqlPurge = @"
+                DELETE 
+                FROM Articles
+                WHERE published_date <= $refdate;
+            ";
+
+            using (SQLiteConnection m_dbConnection = new SQLiteConnection(Repository.ConnectionString))
+            {
+                m_dbConnection.Open();
+                SQLiteCommand command = new SQLiteCommand(sqlPurge, m_dbConnection);
+                command.Parameters.AddWithValue("$refdate", DateTime.Now.AddDays(-1 * retentionDays));
+                command.ExecuteNonQuery();
+            }
+
+        }
+
+
         public Article() : base()
         {
 
