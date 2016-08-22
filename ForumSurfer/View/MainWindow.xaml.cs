@@ -17,6 +17,7 @@ using GalaSoft.MvvmLight.Messaging;
 using ForumSurfer.ViewModel;
 using System.Diagnostics;
 using System.Windows.Threading;
+using System.Windows.Forms;
 
 namespace ForumSurfer
 {
@@ -50,8 +51,6 @@ namespace ForumSurfer
         {
             try
             {
-                Clipboard.SetText(action.Text);
-
                 Debug.Print(@"///////////////////////// BEGIN SEND /////////////////////////");
                 Debug.Print(action.Text);
                 wbFeed.Focus();
@@ -74,10 +73,25 @@ namespace ForumSurfer
                         string chset = document.charset;
                     }
 
-                    System.Threading.Thread.Sleep(100);
-                    if(document.ActiveElement != null)
-                        document.ActiveElement.Focus();
-                    document.ExecCommand("Paste", false, null);
+                    System.Threading.Thread.Sleep(10);
+
+                    try
+                    {
+                        sendTextViaInnerText(document, action.Text);
+                    }
+                    catch(Exception)
+                    {
+                        try
+                        {
+                            sendTextViaClipboard(document, action.Text);
+                        }
+                        catch(Exception)
+                        {
+                            throw;
+                        }
+                        
+                    }
+
                 }
                 else
                 {
@@ -95,6 +109,31 @@ namespace ForumSurfer
 
             }
             return null;
+        }
+
+
+        private void sendTextViaInnerText(dynamic document, string text)
+        {
+            Debug.Print("innerText: " + document.ActiveElement.innerText);
+            document.ActiveElement.Focus();
+            document.ActiveElement.innerText = text;
+        }
+
+        private void sendTextViaClipboard(dynamic document, string text)
+        {
+            System.Windows.Clipboard.SetText(text);
+            System.Threading.Thread.Sleep(10);
+            document.ExecCommand("Paste", false, null);
+        }
+
+
+        private void sendTextViaScript(dynamic document, string text)
+        {
+            HtmlElement head = document.GetElementsByTagName("head")[0];
+            HtmlElement s = document.CreateElement("script");
+            s.SetAttribute("text", "function ___fillIn() { document.activeElement.innerText = '"+ text +"'; }");
+            head.AppendChild(s);
+            document.InvokeScript("___fillIn");
         }
     }
 }

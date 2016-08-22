@@ -101,46 +101,26 @@
                                 <TextBlock Grid.Column="2" Grid.Row="1" Style="{StaticResource SettingsTextStyleKey}" Text="days" VerticalAlignment="Center"/>
                             </Grid>
                         </GroupBox>
-                        <GroupBox Header="Boilerplate Answers" DockPanel.Dock="Top" Margin="0,50,0,0">
+                        <GroupBox DockPanel.Dock="Top" Margin="0,50,0,0">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Foreground="White">BOILERPLATE ANSWERS</Label>
+                                    <Button Style="{DynamicResource MetroCircleButtonStyle}" Content="+" Width="35" Height="35" DockPanel.Dock="Top"/>
+                                </StackPanel>
+                            </GroupBox.Header>
                             <DockPanel>
-                                <Grid DockPanel.Dock="Top">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <DataGrid DockPanel.Dock="Top" Height="300"
-                                              ItemsSource="{Binding BoilerplateAnswers}" 
-                                              AutoGenerateColumns="False" 
-                                              SelectedItem="{Binding SettingsSelectedAnswer, Mode=TwoWay}"
-                                              IsReadOnly="True"
-                                              CanUserAddRows="False"
-                                              CanUserDeleteRows="False">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Title" Binding="{Binding Title}" />
-                                            <DataGridTextColumn Header="Text" Binding="{Binding Text}" />
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                    <DockPanel Grid.Column="1" LastChildFill="False">
-                                        <Button Style="{DynamicResource SquareButtonStyle}" Content="+" DockPanel.Dock="Top"/>
-                                        <Button Style="{DynamicResource SquareButtonStyle}" Content="-" DockPanel.Dock="Top"/>
-                                        <Button Style="{DynamicResource SquareButtonStyle}" Content="E" DockPanel.Dock="Top"/>
-                                    </DockPanel>
-                                </Grid>
-                                <GroupBox Header="Edit" Visibility="Visible" Margin="0,50,0,0">
-                                    <DockPanel>
-                                        <TextBlock Style="{StaticResource SettingsTextStyleKey}" Text="Title" DockPanel.Dock="Top"/>
-                                        <TextBox DockPanel.Dock="Top" Text="{Binding SettingsSelectedAnswer_Title, Mode=TwoWay}"/>
-                                        <TextBlock Style="{StaticResource SettingsTextStyleKey}" Text="Text" DockPanel.Dock="Top" />
-                                        <TextBox DockPanel.Dock="Top" MaxLines="10" TextWrapping="Wrap" AcceptsReturn="True" Height="100" Text="{Binding SettingsSelectedAnswer_Text, Mode=TwoWay}"/>
-                                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                                            <Button Style="{DynamicResource SquareButtonStyle}" Content="OK" />
-                                            <Button Style="{DynamicResource SquareButtonStyle}" Content="Cancel" />
-                                        </DockPanel>
-                                    </DockPanel>
-                                </GroupBox>
+                                <DataGrid DockPanel.Dock="Top" Height="300"
+                                            ItemsSource="{Binding BoilerplateAnswers}" 
+                                            AutoGenerateColumns="False" 
+                                            SelectedItem="{Binding SettingsSelectedAnswer, Mode=TwoWay}"
+                                            IsReadOnly="True"
+                                            CanUserAddRows="False"
+                                            CanUserDeleteRows="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Title" Binding="{Binding Title}" />
+                                        <DataGridTextColumn Header="Text" Binding="{Binding Text}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                             </DockPanel>
                         </GroupBox>
                     </DockPanel>
@@ -179,7 +159,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <DockPanel VerticalAlignment="Center" Margin="5">
-                    <Image Source="Icons/ForumSurferLogo_Xsmall.png" DockPanel.Dock="Left" />
+                    <Image Source="/ForumSurfer;component/Icons/ForumSurferLogo_Xsmall.png" DockPanel.Dock="Left" />
                     <TextBlock Text="FORUM SURFER" DockPanel.Dock="Right" Margin="5">
                         <TextBlock.Style>
                             <Style>

@@ -144,30 +144,6 @@ namespace ForumSurfer.ViewModel
             
         }
 
-        public BoilerplateAnswer SettingsSelectedAnswer {
-            get { return _settingsSelectedAnswer; }
-            set
-            {
-                _settingsSelectedAnswer = value;
-                _settingsSelectedAnswer_text = _settingsSelectedAnswer.Text;
-                _settingsSelectedAnswer_title = _settingsSelectedAnswer.Title;
-                RaisePropertyChanged("SettingsSelectedAnswer_Title");
-                RaisePropertyChanged("SettingsSelectedAnswer_Text");
-            }
-        }
-
-        public String SettingsSelectedAnswer_Text
-        {
-            get { return _settingsSelectedAnswer_text; }
-            set { _settingsSelectedAnswer_text = value; }
-        }
-
-        public String SettingsSelectedAnswer_Title
-        {
-            get { return _settingsSelectedAnswer_title; }
-            set { _settingsSelectedAnswer_title = value; }
-        }
-
         public ObservableCollection<BoilerplateAnswer> BoilerplateAnswers { get; set; }
         public String StatusMessage { get; set; }
         #endregion
@@ -183,9 +159,6 @@ namespace ForumSurfer.ViewModel
         private DialogCoordinator _dialogCoordinator;
         private bool _optionsVisible = false;
         private CollectionViewSource _sortedArticles = new CollectionViewSource();
-        private BoilerplateAnswer _settingsSelectedAnswer;
-        private String _settingsSelectedAnswer_text;
-        private String _settingsSelectedAnswer_title;
         #endregion
 
 
@@ -202,7 +175,6 @@ namespace ForumSurfer.ViewModel
 
         public MainViewModel()
         {
-            SettingsSelectedAnswer = new BoilerplateAnswer(new Data.Boilerplate(),null);
             IsBrowserVisible = true;
             IsOptionsVisible = false;
             SelectedItemChangedCommand = new RelayCommand<RoutedPropertyChangedEventArgs<object>>(SelectedItemChanged);
@@ -214,6 +186,27 @@ namespace ForumSurfer.ViewModel
             EditFeedCommand = new RelayCommand<RoutedEventArgs>(EditFeed);
             ShowOptionsCommand = new RelayCommand<RoutedEventArgs>(ShowOptions);
             _dialogCoordinator = DialogCoordinator.Instance;
+        }
+
+        private void BoilerplateAnswers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                foreach (object item in e.OldItems)
+                {
+                    BoilerplateAnswer ans = item as BoilerplateAnswer;
+                    ans.Boilerplate.Delete();
+                }
+            }
+
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                foreach (object item in e.NewItems)
+                {
+                    //BoilerplateAnswer ans = item as BoilerplateAnswer;
+                    //ans.Boilerplate.Delete();
+                }
+            }
         }
 
         private void ShowOptions(RoutedEventArgs obj)
@@ -238,7 +231,9 @@ namespace ForumSurfer.ViewModel
             // Hides browser otherwise dialog gets behind it
             IsBrowserVisible = false;
             RaisePropertyChanged("IsBrowserVisible");
-            var FeedText = await _dialogCoordinator.ShowInputAsync(this, "Edit feed", "Enter the URL of the feed:");
+            MetroDialogSettings dialogSettings = new MetroDialogSettings();
+            dialogSettings.DefaultText = selectedFeed.Location.ToString();
+            var FeedText = await _dialogCoordinator.ShowInputAsync(this, "Edit feed", "Enter the URL of the feed:", dialogSettings);
             if (FeedText != null)
             {
                 string errMsg = null;
@@ -349,6 +344,8 @@ namespace ForumSurfer.ViewModel
             Debug.Print(Thread.CurrentThread.Name);
             _updaterThread = new Thread(() => UpdaterDelegate());
             _updaterThread.Start();
+
+            BoilerplateAnswers.CollectionChanged += BoilerplateAnswers_CollectionChanged;
         }
 
         private void InitializeBoilerPlate()

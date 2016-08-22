@@ -20,6 +20,12 @@ namespace ForumSurfer.ViewModel
             get { return _boilerplate.Id; }
         }
 
+        public Data.Boilerplate Boilerplate
+        {
+            get { return _boilerplate; }
+            set { _boilerplate = value; }
+        }
+
         public String Title
         {
             get
