@@ -31,7 +31,7 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
-    <PostBuildEvent>move /Y "!(TargetPath)" "$(TargetDir)$(SolutionName)_$(PlatformName)$(TargetExt)"</PostBuildEvent>
+    <PostBuildEvent>move /Y "!(TargetPath)" "$(TargetDir)$(SolutionName)$(TargetExt)"</PostBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
