@@ -55,11 +55,12 @@
         <Path x:Key="AddFeedIcon" Width="20" Height="20" Stretch="Uniform" UseLayoutRounding="False" Fill="White" Data="M25.979,12.896 19.312,12.896 19.312,6.229 12.647,6.229 12.647,12.896 5.979,12.896 5.979,19.562 12.647,19.562 12.647,26.229 19.312,26.229 19.312,19.562 25.979,19.562z" />
         <Path x:Key="BoilerplateIcon" Width="24" Height="24" Stretch="Uniform" UseLayoutRounding="False" Fill="White" Data="M16,4.938c-7.732,0-14,4.701-14,10.5c0,1.981,0.741,3.833,2.016,5.414L2,25.272l5.613-1.44c2.339,1.316,5.237,2.106,8.387,2.106c7.732,0,14-4.701,14-10.5S23.732,4.938,16,4.938zM16.868,21.375h-1.969v-1.889h1.969V21.375zM16.772,18.094h-1.777l-0.176-8.083h2.113L16.772,18.094z" />
     </Window.Resources>
-    
+
+
     <Window.DataContext>
         <Binding Source="{StaticResource MainViewModel}" />
     </Window.DataContext>
-    
+
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <command:EventToCommand Command="{Binding LoadedCommand}" PassEventArgsToCommand="True" />
@@ -103,23 +104,31 @@
                         </GroupBox>
                         <GroupBox DockPanel.Dock="Top" Margin="0,50,0,0">
                             <GroupBox.Header>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Label Foreground="White">BOILERPLATE ANSWERS</Label>
-                                    <Button Style="{DynamicResource MetroCircleButtonStyle}" Content="+" Width="35" Height="35" DockPanel.Dock="Top"/>
+                                    <!-- <Button Style="{DynamicResource MetroCircleButtonStyle}" Content="+" Width="35" Height="35" DockPanel.Dock="Top" Foreground="White" FontWeight="Bold"/> -->
+                                    <Button Focusable="False" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Foreground="White" Content="{StaticResource AddFeedIcon}" ToolTip="Add Boilerplate Answer" Command="{Binding AddBoilerplateCommand}"/>
                                 </StackPanel>
                             </GroupBox.Header>
                             <DockPanel>
                                 <DataGrid DockPanel.Dock="Top" Height="300"
                                             ItemsSource="{Binding BoilerplateAnswers}" 
                                             AutoGenerateColumns="False" 
-                                            SelectedItem="{Binding SettingsSelectedAnswer, Mode=TwoWay}"
                                             IsReadOnly="True"
                                             CanUserAddRows="False"
-                                            CanUserDeleteRows="True">
+                                            CanUserDeleteRows="False">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Title" Binding="{Binding Title}" />
                                         <DataGridTextColumn Header="Text" Binding="{Binding Text}" />
                                     </DataGrid.Columns>
+                                    <DataGrid.InputBindings>
+                                        <KeyBinding Key="Delete" 
+                                                Command="{Binding DeleteBoilerplateCommand}" 
+                                                CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        <MouseBinding MouseAction="LeftDoubleClick" 
+                                                Command="{Binding DoubleClickBoilerplateCommand}" 
+                                                CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                    </DataGrid.InputBindings>
                                 </DataGrid>
                             </DockPanel>
                         </GroupBox>
@@ -128,7 +137,7 @@
             </Controls:Flyout>
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>
-    
+
     <DockPanel>
 
         <StatusBar DockPanel.Dock="Bottom">
@@ -218,7 +227,7 @@
                             <HierarchicalDataTemplate.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem">
                                     <Setter Property="TreeViewItem.IsExpanded" Value="True" />
-                                    <Setter Property="TreeViewItem.IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
+                                    <Setter Property="TreeViewItem.IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
                                     <Setter Property="TreeViewItem.FontFamily" Value="Segoe UI"/>
                                     <Setter Property="TreeViewItem.FontSize" Value="15" />
                                     <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView"/>
@@ -308,9 +317,8 @@
 
             </Grid>
         </DockPanel>
-      
-        
-        
+
     </DockPanel>
 
 </Controls:MetroWindow>
+

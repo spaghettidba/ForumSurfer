@@ -10,21 +10,18 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace ForumSurfer.View
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Interaction logic for BoilerplateDialog.xaml
     /// </summary>
-    public partial class BoilerplateEditor : UserControl
+    public partial class BoilerplateDialog : MahApps.Metro.Controls.Dialogs.CustomDialog
     {
-        public BoilerplateEditor()
+        public BoilerplateDialog()
         {
             InitializeComponent();
         }
-
-
     }
 }

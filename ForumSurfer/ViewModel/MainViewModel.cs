@@ -36,7 +36,8 @@ namespace ForumSurfer.ViewModel
                             new SimpleTreeNodeViewModel()
                             {
                                 Title = "Feeds",
-                                Children = new SortableObservableCollection<TreeNodeViewModel>(Hosts)
+                                Children = new SortableObservableCollection<TreeNodeViewModel>(Hosts),
+                                IsSelected = true
                             }
                         }
                     };
@@ -159,6 +160,7 @@ namespace ForumSurfer.ViewModel
         private DialogCoordinator _dialogCoordinator;
         private bool _optionsVisible = false;
         private CollectionViewSource _sortedArticles = new CollectionViewSource();
+        private View.BoilerplateDialog _boilerplate_dialog;
         #endregion
 
 
@@ -167,10 +169,13 @@ namespace ForumSurfer.ViewModel
         public ICommand LoadedCommand { get; set; }
         public ICommand MarkAllReadCommand { get; set; }
         public ICommand AddFeedCommand { get; set; }
+        public ICommand AddBoilerplateCommand { get; set; }
         public ICommand MarkFeedReadCommand { get; set; }
         public ICommand DeleteFeedCommand { get; set; }
         public ICommand EditFeedCommand { get; set; }
         public ICommand ShowOptionsCommand { get; set; }
+        public ICommand DeleteBoilerplateCommand { get; set; }
+        public ICommand DoubleClickBoilerplateCommand { get; set; }
         #endregion
 
         public MainViewModel()
@@ -181,33 +186,38 @@ namespace ForumSurfer.ViewModel
             LoadedCommand = new RelayCommand<RoutedEventArgs>(Loaded);
             MarkAllReadCommand = new RelayCommand<RoutedEventArgs>(MarkAllRead);
             AddFeedCommand = new RelayCommand<RoutedEventArgs>(AddFeed);
+            AddBoilerplateCommand = new RelayCommand<RoutedEventArgs>(AddBoilerplate);
+            DeleteBoilerplateCommand = new RelayCommand<BoilerplateAnswer>(param => DeleteBoilerplate(param));
+            DoubleClickBoilerplateCommand = new RelayCommand<BoilerplateAnswer>(param => EditBoilerplate(param));
             MarkFeedReadCommand = new RelayCommand<RoutedEventArgs>(MarkFeedRead);
             DeleteFeedCommand = new RelayCommand<RoutedEventArgs>(DeleteFeed);
             EditFeedCommand = new RelayCommand<RoutedEventArgs>(EditFeed);
             ShowOptionsCommand = new RelayCommand<RoutedEventArgs>(ShowOptions);
+            BoilerplateAnswers = new ObservableCollection<BoilerplateAnswer>();
             _dialogCoordinator = DialogCoordinator.Instance;
         }
 
-        private void BoilerplateAnswers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == NotifyCollectionChangedAction.Remove)
-            {
-                foreach (object item in e.OldItems)
-                {
-                    BoilerplateAnswer ans = item as BoilerplateAnswer;
-                    ans.Boilerplate.Delete();
-                }
-            }
 
-            if (e.Action == NotifyCollectionChangedAction.Add)
-            {
-                foreach (object item in e.NewItems)
-                {
-                    //BoilerplateAnswer ans = item as BoilerplateAnswer;
-                    //ans.Boilerplate.Delete();
-                }
-            }
-        }
+
+        //private void BoilerplateAnswers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        //{
+        //    if (e.Action == NotifyCollectionChangedAction.Remove)
+        //    {
+        //        foreach (object item in e.OldItems)
+        //        {
+        //            //BoilerplateAnswer ans = item as BoilerplateAnswer;
+        //            //ans.Boilerplate.Delete();
+        //        }
+        //    }
+
+        //    if (e.Action == NotifyCollectionChangedAction.Add)
+        //    {
+        //        foreach (object item in e.NewItems)
+        //        {
+                    
+        //        }
+        //    }
+        //}
 
         private void ShowOptions(RoutedEventArgs obj)
         {
@@ -338,25 +348,27 @@ namespace ForumSurfer.ViewModel
 
             Data.Article.PurgeOlderItems(RetentionDays);
             InitializeData(true);
-            InitializeBoilerPlate();
 
             Thread.CurrentThread.Name = "UI";
             Debug.Print(Thread.CurrentThread.Name);
             _updaterThread = new Thread(() => UpdaterDelegate());
             _updaterThread.Start();
 
-            BoilerplateAnswers.CollectionChanged += BoilerplateAnswers_CollectionChanged;
+            //BoilerplateAnswers.CollectionChanged += BoilerplateAnswers_CollectionChanged;
+            InitializeBoilerPlate();
         }
 
         private void InitializeBoilerPlate()
         {
             List<Data.Boilerplate> allItems = Data.Boilerplate.LoadAll();
-            BoilerplateAnswers = new ObservableCollection<BoilerplateAnswer>();
-            foreach(Data.Boilerplate item in allItems)
+
+            BoilerplateAnswers.Clear();
+
+            foreach (Data.Boilerplate item in allItems)
             {
                 BoilerplateAnswers.Add(new BoilerplateAnswer(item, () => { boilerPlateSelected(item); }));
             }
-            RaisePropertyChanged("BoilerplateAnswers");
+            
         }
 
         private void boilerPlateSelected(Data.Boilerplate item)
@@ -365,15 +377,30 @@ namespace ForumSurfer.ViewModel
             Messenger.Default.Send<SendBoilerplateMessage>(msg);
         }
 
-        private void MarkAllRead(RoutedEventArgs e)
+        private async void MarkAllRead(RoutedEventArgs e)
         {
-            Data.Article.MarkAllRead();
-            if (Articles != null)
+            // Hides browser otherwise dialog gets behind it
+            IsBrowserVisible = false;
+            RaisePropertyChanged("IsBrowserVisible");
+            try
             {
-                foreach (Article a in Articles)
+                MessageDialogResult x = await _dialogCoordinator.ShowMessageAsync(this, "Mark all as read", "This will mark all feeds are read. Are you sure?", MessageDialogStyle.AffirmativeAndNegative);
+                if (x.Equals(MessageDialogResult.Affirmative))
                 {
-                    a.Unread = false;
+                    Data.Article.MarkAllRead();
+                    if (Articles != null)
+                    {
+                        foreach (Article a in Articles)
+                        {
+                            a.Unread = false;
+                        }
+                    }
                 }
+            }
+            finally
+            {
+                IsBrowserVisible = true;
+                RaisePropertyChanged("IsBrowserVisible");
             }
         }
 
@@ -408,6 +435,69 @@ namespace ForumSurfer.ViewModel
             RaisePropertyChanged("IsBrowserVisible");
 
         }
+
+        private async void AddBoilerplate(RoutedEventArgs obj)
+        {
+            _boilerplate_dialog = new View.BoilerplateDialog();
+            BoilerplateEditorViewModel bpdc = new BoilerplateEditorViewModel() { Text = "", Title = "", Context = this, Dialog = _boilerplate_dialog};
+            _boilerplate_dialog.DataContext = bpdc;
+            await _dialogCoordinator.ShowMetroDialogAsync(this, _boilerplate_dialog);
+        }
+
+
+
+        public async void UpdateBoilerplate(Data.Boilerplate bp)
+        {
+            BoilerplateEditorViewModel bpdc = (BoilerplateEditorViewModel)_boilerplate_dialog.DataContext;
+            if (!bpdc.Cancel && bpdc.Exception == null)
+            {
+                BoilerplateAnswer bpa = BoilerplateAnswers.FirstOrDefault(item => item.Title.Equals(bp.Title));
+                if (bpa == null)
+                {
+                    BoilerplateAnswers.Add(new BoilerplateAnswer(bp, () => { boilerPlateSelected(bp); }));
+                }
+                else
+                {
+                    // this won't update the text in the datagrid though...
+                    bpa.Text = bp.Text;
+                    bpa.Title = bp.Title;
+                }
+            }
+            if (bpdc.Exception != null)
+            {
+                await _dialogCoordinator.ShowMessageAsync(this, "Add Boilerplate Answer", "Unable to save: " + bpdc.Exception.Message);
+            }
+        }
+
+
+        private async void EditBoilerplate(BoilerplateAnswer param)
+        {
+            _boilerplate_dialog = new View.BoilerplateDialog();
+            BoilerplateEditorViewModel bpdc = new BoilerplateEditorViewModel() { Text = param.Text, Title = param.Title, Context = this, Dialog = _boilerplate_dialog };
+            _boilerplate_dialog.DataContext = bpdc;
+            await _dialogCoordinator.ShowMetroDialogAsync(this, _boilerplate_dialog);
+        }
+
+        private async void DeleteBoilerplate(BoilerplateAnswer param)
+        {
+            MessageDialogResult result = await _dialogCoordinator.ShowMessageAsync(this, "Delete Boilerplate Answer", "Are you sure?", MessageDialogStyle.AffirmativeAndNegative);
+
+            if (result.Equals(MessageDialogResult.Affirmative))
+            {
+                try
+                {
+                    var theItem = BoilerplateAnswers.FirstOrDefault(item => item.Title.Equals(param.Title));
+                    BoilerplateAnswers.Remove(theItem);
+                    param.Boilerplate.Delete();
+                }
+                catch(Exception e)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(this, "Delete Boilerplate Answer", "Unable to delete: " + e.Message);
+                }
+            }
+        }
+
+
 
         private void SelectedItemChanged(RoutedPropertyChangedEventArgs<object> obj)
         {
@@ -477,7 +567,10 @@ namespace ForumSurfer.ViewModel
 
             if (refreshTreeView)
             {
+                //Set selected item
+                TreeModel.Items[0].IsSelected = true;
                 RaisePropertyChanged("TreeModel");
+                SelectedItemChanged(new RoutedPropertyChangedEventArgs<object>(null, TreeModel.Items[0]));
             }
 
             //
@@ -617,5 +710,7 @@ namespace ForumSurfer.ViewModel
             StatusMessage = s;
             RaisePropertyChanged("StatusMessage");
         }
+
+
     }
 }

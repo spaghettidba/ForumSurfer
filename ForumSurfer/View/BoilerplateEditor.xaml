@@ -3,9 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:ForumSurfer.View"
+             xmlns:local="clr-namespace:ForumSurfer.ViewModel"
              mc:Ignorable="d" 
+             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              d:DesignHeight="300" d:DesignWidth="300">
+
+
+    <UserControl.Resources>
+        <Style TargetType="{x:Type Control}" x:Key="ControlStyle">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="15" />
+        </Style>
+        <Style TargetType="{x:Type Label}" x:Key="LabelStyle" BasedOn="{StaticResource ControlStyle}" />
+        <Style TargetType="{x:Type TextBox}" x:Key="TextStyle" BasedOn="{StaticResource ControlStyle}" />
+    </UserControl.Resources>
+
+   
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
@@ -16,20 +29,20 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <DockPanel>
-            <Label DockPanel.Dock="Top">
-                Name
+            <Label DockPanel.Dock="Top" Style="{StaticResource LabelStyle}">
+                Title
             </Label>
-            <TextBox DockPanel.Dock="Bottom"/>
+            <TextBox DockPanel.Dock="Bottom" Style="{StaticResource TextStyle}" Text="{Binding Title, Mode=TwoWay}"/>
         </DockPanel>
         <DockPanel Grid.Row="1">
-            <Label DockPanel.Dock="Top">
+            <Label DockPanel.Dock="Top" Style="{StaticResource LabelStyle}">
                 Text
             </Label>
-            <TextBox DockPanel.Dock="Bottom"/>
+            <TextBox DockPanel.Dock="Bottom" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Stretch" Height="300" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" Style="{StaticResource TextStyle}" Text="{Binding Text, Mode=TwoWay}"/>
         </DockPanel>
         <DockPanel Grid.Row="2" LastChildFill="False">
-            <Button DockPanel.Dock="Right">Cancel</Button>
-            <Button DockPanel.Dock="Right">OK</Button>
+            <Button DockPanel.Dock="Right" Margin="10" Padding="10" FontFamily="Segoe UI" Background="{DynamicResource AccentColorBrush}" Foreground="White" Command="{Binding CancelCommand}">Cancel</Button>
+            <Button DockPanel.Dock="Right" Margin="10" Padding="10" FontFamily="Segoe UI" Background="{DynamicResource AccentColorBrush}" Foreground="White" Command="{Binding OKCommand}">OK</Button>
         </DockPanel>
     </Grid>
 </UserControl>

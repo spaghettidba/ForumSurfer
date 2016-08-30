@@ -99,6 +99,7 @@ namespace ForumSurfer.Data
                     {
                         command = new SQLiteCommand(sqlUpdate, m_dbConnection);
                         command.Parameters.AddWithValue("$value", Text);
+                        command.Parameters.AddWithValue("$title", Title);
                         command.ExecuteNonQuery();
                     }
 
@@ -123,6 +124,8 @@ namespace ForumSurfer.Data
                     FROM Boilerplate 
                     WHERE title = $title;
                 ";
+
+                m_dbConnection.Open();
 
                 SQLiteCommand command = new SQLiteCommand(sqlDelete, m_dbConnection);
                 command.Parameters.AddWithValue("$title", Title);
