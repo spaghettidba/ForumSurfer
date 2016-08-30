@@ -18,6 +18,7 @@ using MahApps.Metro.Controls.Dialogs;
 using GalaSoft.MvvmLight.Messaging;
 using Microsoft.Win32;
 using System.Xml.Linq;
+using System.Reflection;
 
 namespace ForumSurfer.ViewModel
 {
@@ -163,6 +164,8 @@ namespace ForumSurfer.ViewModel
 
         }
 
+        public String VersionInfo { get; private set; }
+
         public ObservableCollection<BoilerplateAnswer> BoilerplateAnswers { get; set; }
         public String StatusMessage { get; set; }
         #endregion
@@ -216,6 +219,7 @@ namespace ForumSurfer.ViewModel
             ImportOPMLCommand = new RelayCommand<RoutedEventArgs>(ImportOPML);
             ExportOPMLCommand = new RelayCommand<RoutedEventArgs>(ExportOPML);
             BoilerplateAnswers = new ObservableCollection<BoilerplateAnswer>();
+            VersionInfo = "ForumSurfer Version " + Assembly.GetEntryAssembly().GetName().Version.ToString();
             _dialogCoordinator = DialogCoordinator.Instance;
         }
 

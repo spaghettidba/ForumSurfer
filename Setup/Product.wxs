@@ -11,7 +11,7 @@
   <?define PlatformReleaseFolder = "Release" ?>
   <?endif ?>
   
-	<Product Id="*" Name="ForumSurfer" Language="1033" Version="1.2.0.0" Manufacturer="sqlconsulting.it" UpgradeCode="98a3652e-6971-43f8-a250-f166d112d95e">
+	<Product Id="*" Name="ForumSurfer" Language="1033" Version="1.4.0.0" Manufacturer="sqlconsulting.it" UpgradeCode="98a3652e-6971-43f8-a250-f166d112d95e">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MediaTemplate EmbedCab="yes" />
