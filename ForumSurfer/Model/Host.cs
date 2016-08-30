@@ -10,6 +10,7 @@ namespace ForumSurfer.Model
     {
         public Uri Location { get; set; }
         public string Title { get; set; }
+        public int Zoom { get; set; }
         public List<Feed> Feeds { get; set; }
 
         public Object SortKey
@@ -29,7 +30,13 @@ namespace ForumSurfer.Model
         {
             this.Location = h.Location;
             this.Title = h.Title;
+            this.Zoom = h.Zoom;
             this.Feeds = h.Feeds;
+        }
+
+        public override string ToString()
+        {
+            return Location.ToString();
         }
     }
 }

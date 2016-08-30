@@ -133,6 +133,15 @@
                                 </DataGrid>
                             </DockPanel>
                         </GroupBox>
+                        <GroupBox DockPanel.Dock="Top" Margin="0,50,0,0">
+                            <GroupBox.Header>
+                                <Label Foreground="White">IMPORT / EXPORT</Label>
+                            </GroupBox.Header>
+                            <StackPanel Orientation="Vertical">
+                                <Button Content="Import OPML" DockPanel.Dock="Top" Margin ="10" FontSize="11" Command="{Binding ImportOPMLCommand}"/>
+                                <Button Content="Export OPML" DockPanel.Dock="Top" Margin ="10" FontSize="11" Command="{Binding ExportOPMLCommand}"/>
+                            </StackPanel>
+                        </GroupBox>
                     </DockPanel>
                 </Grid>
             </Controls:Flyout>

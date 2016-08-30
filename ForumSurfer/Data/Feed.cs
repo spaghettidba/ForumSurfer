@@ -111,8 +111,8 @@ namespace ForumSurfer.Data
         public void Save(Boolean SaveArticles = false)
         {
             String sqlInsertHosts = @"
-                INSERT INTO Hosts (uri) 
-                SELECT $uri
+                INSERT INTO Hosts (uri, zoom) 
+                SELECT $uri, 100
                 WHERE NOT EXISTS (
                     SELECT *
                     FROM Hosts 

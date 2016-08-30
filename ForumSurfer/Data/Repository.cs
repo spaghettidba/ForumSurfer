@@ -48,7 +48,8 @@ namespace ForumSurfer.Data
             String sqlCreateTableHosts = @"
                 CREATE TABLE IF NOT EXISTS Hosts (
                     host_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    uri TEXT NOT NULL UNIQUE
+                    uri TEXT NOT NULL UNIQUE,
+                    zoom INTEGER NULL
                 )
             ";
 

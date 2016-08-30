@@ -18,6 +18,8 @@ using ForumSurfer.ViewModel;
 using System.Diagnostics;
 using System.Windows.Threading;
 using System.Windows.Forms;
+using System.Reflection;
+using SHDocVw;
 
 namespace ForumSurfer
 {
@@ -27,13 +29,16 @@ namespace ForumSurfer
     public partial class MainWindow : MetroWindow
     {
 
+        private int zoomLevel;
+
         public MainWindow()
         {
             Browser.BrowserHelper.SetBrowserFeatureControl();
             InitializeComponent();
             Messenger.Default.Register<SendBoilerplateMessage>(this, (action) => ReceiveMessage(action));
+            Messenger.Default.Register<SendSetZoomMessage>(this, (action) => ReceiveSetZoomMessage(action));
+            wbFeed.LoadCompleted += WbFeed_LoadCompleted;
         }
-
 
         private void TreeViewItem_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
         {
@@ -135,5 +140,37 @@ namespace ForumSurfer
             head.AppendChild(s);
             document.InvokeScript("___fillIn");
         }
+
+
+        private object ReceiveSetZoomMessage(SendSetZoomMessage msg)
+        {
+            zoomLevel = msg.Zoom;
+            return null;
+        }
+
+
+        private void WbFeed_LoadCompleted(object sender, NavigationEventArgs e)
+        {
+            try
+            {
+                FieldInfo webBrowserInfo = wbFeed.GetType().GetField("_axIWebBrowser2", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                object comWebBrowser = null;
+                object zoomPercent = zoomLevel;
+                if (webBrowserInfo != null)
+                    comWebBrowser = webBrowserInfo.GetValue(wbFeed);
+                if (comWebBrowser != null)
+                {
+                    InternetExplorer ie = (InternetExplorer)comWebBrowser;
+                    ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_OPTICAL_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref zoomPercent, IntPtr.Zero);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.Message);
+            }
+        }
+
+
     }
 }

@@ -16,6 +16,7 @@ namespace ForumSurfer.Model
         public DateTime LastUpdate { get; set; }
         public String Title { get; set; }
         public String Host { get; set; }
+        public Host ParentHost { get; set; }
         public List<Article> Articles { get; set; }
         public long Id { get; set; }
 
@@ -38,6 +39,7 @@ namespace ForumSurfer.Model
             this.LastUpdate = f.LastUpdate;
             this.Title = f.Title;
             this.Host = f.Host;
+            this.ParentHost = ParentHost;
             this.Articles = Articles;
         }
 

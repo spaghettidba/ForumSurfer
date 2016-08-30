@@ -29,15 +29,16 @@ namespace FeedTester
         {
             //CreateDatabase();
             //InsertFeed("http://www.sqlservercentral.com/Forums/RssFeed2799-0-0-1.aspx");
-            UpdateAllFeeds();
-            //ParseOpml();
+            //UpdateAllFeeds();
+            ParseOpml();
         }
 
         private static void ParseOpml()
         {
-            XDocument doc = XDocument.Load("file://d:/temp/feeds.opml");
-            var descendants = doc.Descendants("outline");
-            var elements = descendants.Elements("outline");
+            XDocument doc = XDocument.Load("file://d:/temp/feedly.opml");
+            //ExtractOutlines(doc);
+            //var descendants = doc.Descendants("outline");
+            //var elements = descendants.Elements("outline");
             List<Outline> t = doc
                                    .Descendants("outline")
                                    .Elements("outline")
@@ -47,14 +48,14 @@ namespace FeedTester
                                        URL = o.Attribute("xmlUrl").Value
                                    })
                                    .ToList();
-            foreach(Outline o in t)
+            foreach (Outline o in t)
             {
                 try
                 {
                     Debug.Print(o.Text);
-                    InsertFeed(o.URL);
+                    //InsertFeed(o.URL);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.Print("Errore!!! " + o.Text);
                     Debug.Print(o.URL);
@@ -62,6 +63,38 @@ namespace FeedTester
                 }
             }
         }
+
+
+        private static void ExtractOutlines(XContainer cont)
+        {
+            List<Outline> t = cont
+                                   .Descendants("outline")
+                                   .Elements("outline")
+                                   .Select(o => new Outline
+                                   {
+                                       Text = o.Attribute("text").Value,
+                                       URL = o.Attribute("xmlUrl").Value
+                                   })
+                                   .ToList();
+
+
+            foreach (Outline o in t)
+            {
+                try
+                {
+                    Debug.Print(o.Text);
+                    //InsertFeed(o.URL);
+                }
+                catch (Exception e)
+                {
+                    Debug.Print("Errore!!! " + o.Text);
+                    Debug.Print(o.URL);
+                    Debug.Print(e.StackTrace);
+                }
+            }
+
+        }
+
 
 
         class Outline

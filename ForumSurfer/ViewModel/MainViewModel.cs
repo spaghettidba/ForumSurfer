@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using MahApps.Metro.Controls.Dialogs;
 using GalaSoft.MvvmLight.Messaging;
+using Microsoft.Win32;
+using System.Xml.Linq;
 
 namespace ForumSurfer.ViewModel
 {
@@ -24,8 +26,10 @@ namespace ForumSurfer.ViewModel
     {
 
         #region ViewModelAttributes
-        public TreeViewModel TreeModel {
-            get {
+        public TreeViewModel TreeModel
+        {
+            get
+            {
                 if (Hosts == null)
                     return null;
                 else
@@ -82,18 +86,32 @@ namespace ForumSurfer.ViewModel
             }
             set
             {
-                if(_selectedArticle != null && _selectedArticle.Unread)
+                if (_selectedArticle != null && _selectedArticle.Unread)
                 {
                     MarkArticleRead(_selectedArticle);
                 }
                 _selectedArticle = value;
+
+                try
+                {
+                    var msg = new SendSetZoomMessage(_selectedArticle.ParentFeed.ParentHost.Zoom);
+                    Messenger.Default.Send<SendSetZoomMessage>(msg);
+                }
+                catch (Exception)
+                {
+                    Debug.Print("Unable to set zoom: host not found.");
+                    //ignore
+                }
+
+
                 RaisePropertyChanged("SelectedArticle");
                 RaisePropertyChanged("Articles");
             }
         }
 
         public Boolean IsBrowserVisible { get; set; }
-        public Boolean IsOptionsVisible {
+        public Boolean IsOptionsVisible
+        {
             get
             {
                 return _optionsVisible;
@@ -114,7 +132,7 @@ namespace ForumSurfer.ViewModel
                 if (_allData == null)
                     return null;
                 SortableObservableCollection<TreeNodeViewModel> _hosts = new SortableObservableCollection<TreeNodeViewModel>();
-                foreach(Host h in _allData)
+                foreach (Host h in _allData)
                 {
                     _hosts.Add(new SimpleTreeNodeViewModel(h));
                 }
@@ -142,7 +160,7 @@ namespace ForumSurfer.ViewModel
                 settings.RetentionDays = value;
                 settings.Save();
             }
-            
+
         }
 
         public ObservableCollection<BoilerplateAnswer> BoilerplateAnswers { get; set; }
@@ -176,6 +194,8 @@ namespace ForumSurfer.ViewModel
         public ICommand ShowOptionsCommand { get; set; }
         public ICommand DeleteBoilerplateCommand { get; set; }
         public ICommand DoubleClickBoilerplateCommand { get; set; }
+        public ICommand ImportOPMLCommand { get; set; }
+        public ICommand ExportOPMLCommand { get; set; }
         #endregion
 
         public MainViewModel()
@@ -193,6 +213,8 @@ namespace ForumSurfer.ViewModel
             DeleteFeedCommand = new RelayCommand<RoutedEventArgs>(DeleteFeed);
             EditFeedCommand = new RelayCommand<RoutedEventArgs>(EditFeed);
             ShowOptionsCommand = new RelayCommand<RoutedEventArgs>(ShowOptions);
+            ImportOPMLCommand = new RelayCommand<RoutedEventArgs>(ImportOPML);
+            ExportOPMLCommand = new RelayCommand<RoutedEventArgs>(ExportOPML);
             BoilerplateAnswers = new ObservableCollection<BoilerplateAnswer>();
             _dialogCoordinator = DialogCoordinator.Instance;
         }
@@ -214,7 +236,7 @@ namespace ForumSurfer.ViewModel
         //    {
         //        foreach (object item in e.NewItems)
         //        {
-                    
+
         //        }
         //    }
         //}
@@ -236,7 +258,34 @@ namespace ForumSurfer.ViewModel
                 selectedFeed = (Model.Feed)tvm.Node;
             }
             else
+            {
+                if (tvm.Node is Model.Host)
+                {
+                    try
+                    {
+                        Model.Host selectedHost = (Model.Host)tvm.Node;
+                        IsBrowserVisible = false;
+                        RaisePropertyChanged("IsBrowserVisible");
+                        MetroDialogSettings diagSettings = new MetroDialogSettings();
+                        diagSettings.DefaultText = selectedHost.Zoom.ToString();
+                        var ZoomLevel = await _dialogCoordinator.ShowInputAsync(this, "Set Zoom Level", "Enter the desired zoom level for this host: ", diagSettings);
+                        selectedHost.Zoom = Int32.Parse(ZoomLevel.ToString());
+                        Data.Host dh = new Data.Host(selectedHost);
+                        dh.Save();
+                    }
+                    catch (Exception ex)
+                    {
+                        await _dialogCoordinator.ShowMessageAsync(this, "Set Zoom Level", "Unable to set zoom: " + ex.Message);
+                    }
+                    finally
+                    {
+                        IsBrowserVisible = true;
+                        RaisePropertyChanged("IsBrowserVisible");
+                    }
+                }
                 return;
+            }
+
 
             // Hides browser otherwise dialog gets behind it
             IsBrowserVisible = false;
@@ -368,7 +417,7 @@ namespace ForumSurfer.ViewModel
             {
                 BoilerplateAnswers.Add(new BoilerplateAnswer(item, () => { boilerPlateSelected(item); }));
             }
-            
+
         }
 
         private void boilerPlateSelected(Data.Boilerplate item)
@@ -439,7 +488,7 @@ namespace ForumSurfer.ViewModel
         private async void AddBoilerplate(RoutedEventArgs obj)
         {
             _boilerplate_dialog = new View.BoilerplateDialog();
-            BoilerplateEditorViewModel bpdc = new BoilerplateEditorViewModel() { Text = "", Title = "", Context = this, Dialog = _boilerplate_dialog};
+            BoilerplateEditorViewModel bpdc = new BoilerplateEditorViewModel() { Text = "", Title = "", Context = this, Dialog = _boilerplate_dialog };
             _boilerplate_dialog.DataContext = bpdc;
             await _dialogCoordinator.ShowMetroDialogAsync(this, _boilerplate_dialog);
         }
@@ -490,7 +539,7 @@ namespace ForumSurfer.ViewModel
                     BoilerplateAnswers.Remove(theItem);
                     param.Boilerplate.Delete();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     await _dialogCoordinator.ShowMessageAsync(this, "Delete Boilerplate Answer", "Unable to delete: " + e.Message);
                 }
@@ -506,7 +555,7 @@ namespace ForumSurfer.ViewModel
             if (selected == null)
                 return;
 
-            if(selected is SimpleTreeNodeViewModel)
+            if (selected is SimpleTreeNodeViewModel)
             {
                 SimpleTreeNodeViewModel tvm = (SimpleTreeNodeViewModel)selected;
                 _selectedNode = tvm;
@@ -517,7 +566,7 @@ namespace ForumSurfer.ViewModel
                 else if (tvm.Node is Model.Host)
                 {
                     List<Model.Article> intermediate = new List<Model.Article>();
-                    foreach(Model.Feed feed in ((Model.Host)tvm.Node).Feeds)
+                    foreach (Model.Feed feed in ((Model.Host)tvm.Node).Feeds)
                     {
                         foreach (Model.Article a in feed.Articles)
                         {
@@ -531,7 +580,7 @@ namespace ForumSurfer.ViewModel
                     if (_articles == null)
                         _articles = new SortableObservableCollection<Article>();
                     _articles.Clear();
-                    foreach(Model.Host h in _allData)
+                    foreach (Model.Host h in _allData)
                     {
                         foreach (Model.Feed feed in h.Feeds)
                         {
@@ -576,7 +625,7 @@ namespace ForumSurfer.ViewModel
             //
             // Update articles
             //
-            if(_selectedNode != null)
+            if (_selectedNode != null)
             {
                 SimpleTreeNodeViewModel tvm = (SimpleTreeNodeViewModel)_selectedNode;
                 if (tvm.Node is Model.Feed)
@@ -584,10 +633,10 @@ namespace ForumSurfer.ViewModel
                     SetStatusMessage("Updating Articles (feed)... ");
                     Model.Feed selectedFeed = (Model.Feed)tvm.Node;
                     // Find the feed and add the Articles
-                    foreach(Host h in _allData)
+                    foreach (Host h in _allData)
                     {
                         Feed f = h.Feeds.FirstOrDefault(el => el.Location.Equals(selectedFeed.Location));
-                        if(f != null)
+                        if (f != null)
                         {
                             Articles.AddMissing(f.Articles, new ArticleEqualityComparer(), _uiContext);
                         }
@@ -612,7 +661,7 @@ namespace ForumSurfer.ViewModel
                     {
                         foreach (Model.Feed feed in h.Feeds)
                         {
-                            Articles.AddMissing(feed.Articles, new ArticleEqualityComparer(),_uiContext);
+                            Articles.AddMissing(feed.Articles, new ArticleEqualityComparer(), _uiContext);
                         }
                     }
                 }
@@ -641,7 +690,7 @@ namespace ForumSurfer.ViewModel
             {
                 InitializeData(false);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 StatusMessage = e.StackTrace;
             }
@@ -651,25 +700,25 @@ namespace ForumSurfer.ViewModel
         private void UpdaterDelegate()
         {
             Task databaseTask = null;
-            while(_uiThread.IsAlive)
+            while (_uiThread.IsAlive)
             {
                 Debug.Print(Thread.CurrentThread.Name);
                 if (databaseTask == null || databaseTask.IsCompleted)
                 {
-                     databaseTask = Task.Factory.StartNew(() =>
-                     {
-                         Data.Feed.UpdateAll(RetentionDays);
-                         if (_uiContext != null)
-                         {
-                             UpdateData();
-                             _uiContext.Send(DivideByZeroException => SetSortOrder(), null);
-                         }
-                     }, 
-                     CancellationToken.None,
-                     TaskCreationOptions.None,
-                     TaskScheduler.Default);
+                    databaseTask = Task.Factory.StartNew(() =>
+                    {
+                        Data.Feed.UpdateAll(RetentionDays);
+                        if (_uiContext != null)
+                        {
+                            UpdateData();
+                            _uiContext.Send(DivideByZeroException => SetSortOrder(), null);
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    TaskScheduler.Default);
                 }
-                for(int i =0;i< AutoUpdateMinutes * 6000; i++)
+                for (int i = 0; i < AutoUpdateMinutes * 6000; i++)
                 {
                     Thread.Sleep(10);
                     if (!_uiThread.IsAlive)
@@ -712,5 +761,68 @@ namespace ForumSurfer.ViewModel
         }
 
 
+        private async void ImportOPML(RoutedEventArgs e)
+        {
+            try
+            {
+                OPML opml = new OPML();
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Multiselect = false;
+                openFileDialog.DefaultExt = ".opml";
+                openFileDialog.Filter = "OPML Files (*.opml)|*.opml";
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    List<Feed> t = opml.Import(openFileDialog.FileName);
+                    foreach (Feed f in t)
+                    {
+                        try
+                        {
+                            Data.Feed feed = new Data.Feed(f);
+                            feed.Location = f.Location;
+                            feed.UpdateFromUri(true, RetentionDays);
+                            feed.Save(true);
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+                    }
+
+                    InitializeData(true);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                IsBrowserVisible = false;
+                RaisePropertyChanged("IsBrowserVisible");
+                await _dialogCoordinator.ShowMessageAsync(this, "Import OPML", "Unable to import: " + ex.Message);
+            }
+        }
+
+        private async void ExportOPML(RoutedEventArgs e)
+        {
+            OPML opml = new OPML();
+
+            try
+            {
+                XDocument doc = opml.Export(_allData);
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.DefaultExt = ".opml";
+                sfd.Filter = "OPML Files (*.opml)|*.opml";
+
+                if (sfd.ShowDialog() == true)
+                {
+                    doc.Save(sfd.FileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                IsBrowserVisible = false;
+                RaisePropertyChanged("IsBrowserVisible");
+                await _dialogCoordinator.ShowMessageAsync(this, "Export OPML", "Unable to export: " + ex.Message);
+            }
+        }
     }
 }
