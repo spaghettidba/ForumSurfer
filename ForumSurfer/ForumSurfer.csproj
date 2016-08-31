@@ -229,6 +229,15 @@
   <ItemGroup>
     <Resource Include="Images\ForumSurfer.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ForumSurfer_Settings.png" />
+    <Resource Include="Images\ForumSurfer_Settings_Boilerplate.png" />
+    <Resource Include="Images\ForumSurfer_Settings_Edit.png" />
+    <Resource Include="Images\ForumSurfer_Settings_SetZoom.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ForumSurfer_Settings_Boilerplate_Use.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.99.0\build\net451\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.99.0\build\net451\System.Data.SQLite.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

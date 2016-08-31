@@ -29,18 +29,34 @@ Sometimes people post questions that are poorly worded or are missing crucial pi
 
 **Download**
 --------
-[Download ForumSurfer](https://github.com/spaghettidba/ForumSurfer/releases) from the [releases page](https://github.com/spaghettidba/ForumSurfer/releases).
+[Download ForumSurfer](https://github.com/spaghettidba/ForumSurfer/releases/latest) from the [releases page](https://github.com/spaghettidba/ForumSurfer/releases/latest).
 
 
 ----------
 
 **Screenshots**
 --------
+Main window
 ![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer.png)
+
+Settings
+![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings.png)
+
+Boilerplate Answers Editor
+![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings_Boilerplate.png)
+
+Boilerplate Answers Usage
+![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings_Boilerplate_Use.png)
+
+Edit Feeds / Hosts
+![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings_Edit.png)
+
+Edit Feeds lets you set the feed URI, Edit Host lets you set a zoom factor for that particular host. This is particularly useful in High-DPI displays, that usually don't render well all sites.
+![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings_SetZoom.png)
 
 
 ----------
 
 **Getting started**
 --------
-[Download a sample OPML file](https://gist.github.com/spaghettidba/4b5a6d47bb61a16456c5400f4bc1cd7a) that includes all the major SQL Server forums and Q&A sites then import the file from settings, Import OPML
+[Download a sample OPML file](https://gist.github.com/spaghettidba/4b5a6d47bb61a16456c5400f4bc1cd7a) that includes all the major SQL Server forums and Q&A sites. Import the file from settings, Import OPML.
