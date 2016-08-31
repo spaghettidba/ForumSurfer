@@ -775,6 +775,8 @@ namespace ForumSurfer.ViewModel
                 openFileDialog.DefaultExt = ".opml";
                 openFileDialog.Filter = "OPML Files (*.opml)|*.opml";
 
+                Exception exc = null;
+
                 if (openFileDialog.ShowDialog() == true)
                 {
                     List<Feed> t = opml.Import(openFileDialog.FileName);
@@ -787,14 +789,16 @@ namespace ForumSurfer.ViewModel
                             feed.UpdateFromUri(true, RetentionDays);
                             feed.Save(true);
                         }
-                        catch (Exception)
+                        catch (Exception ee)
                         {
-                            throw;
+                            exc = ee;
                         }
                     }
 
                     InitializeData(true);
 
+                    if (exc != null)
+                        throw exc;
                 }
             }
             catch (Exception ex)
