@@ -37,3 +37,10 @@ Sometimes people post questions that are poorly worded or are missing crucial pi
 **Screenshots**
 --------
 ![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer.png)
+
+
+----------
+
+**Getting started**
+--------
+[Download a sample OPML file](https://gist.github.com/spaghettidba/4b5a6d47bb61a16456c5400f4bc1cd7a) that includes all the major SQL Server forums and Q&A sites then import the file from settings, Import OPML

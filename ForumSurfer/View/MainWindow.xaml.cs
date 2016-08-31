@@ -145,18 +145,27 @@ namespace ForumSurfer
         private object ReceiveSetZoomMessage(SendSetZoomMessage msg)
         {
             zoomLevel = msg.Zoom;
+            if (msg.SetImmediately)
+            {
+                setBrowserZoom(zoomLevel);
+            }
             return null;
         }
 
 
         private void WbFeed_LoadCompleted(object sender, NavigationEventArgs e)
         {
+            setBrowserZoom(zoomLevel);
+        }
+
+
+        private void setBrowserZoom(object zoomPercent)
+        {
             try
             {
                 FieldInfo webBrowserInfo = wbFeed.GetType().GetField("_axIWebBrowser2", BindingFlags.Instance | BindingFlags.NonPublic);
 
                 object comWebBrowser = null;
-                object zoomPercent = zoomLevel;
                 if (webBrowserInfo != null)
                     comWebBrowser = webBrowserInfo.GetValue(wbFeed);
                 if (comWebBrowser != null)

@@ -273,9 +273,17 @@ namespace ForumSurfer.ViewModel
                         MetroDialogSettings diagSettings = new MetroDialogSettings();
                         diagSettings.DefaultText = selectedHost.Zoom.ToString();
                         var ZoomLevel = await _dialogCoordinator.ShowInputAsync(this, "Set Zoom Level", "Enter the desired zoom level for this host: ", diagSettings);
+                        int prevZoom = selectedHost.Zoom;
                         selectedHost.Zoom = Int32.Parse(ZoomLevel.ToString());
                         Data.Host dh = new Data.Host(selectedHost);
                         dh.Save();
+
+                        if (prevZoom != selectedHost.Zoom)
+                        {
+                            var msg = new SendSetZoomMessage(selectedHost.Zoom);
+                            msg.SetImmediately = true;
+                            Messenger.Default.Send<SendSetZoomMessage>(msg);
+                        }
                     }
                     catch (Exception ex)
                     {

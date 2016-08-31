@@ -10,6 +10,7 @@ namespace ForumSurfer.ViewModel
     {
 
         public int Zoom { get; set; } = 100;
+        public bool SetImmediately { get; set; } = false;
 
         public SendSetZoomMessage(int zoom)
         {
