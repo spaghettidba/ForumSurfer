@@ -36,19 +36,27 @@ Sometimes people post questions that are poorly worded or are missing crucial pi
 
 **Screenshots**
 --------
-Main window
+**Main window**
+The main window has a treeview with 3 levels: all feeds, host, feed. Clicking each level will display articles for that level.
+Clicking an article on the central panel will open the article URL on the web browser on the right panel.
 ![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer.png)
 
-Settings
+**Settings**
+The settings flyout lets you configure global parameters and gives access to boilerplate answers. 
+You can add (+ sign), delete (select and press DEL) or edit (doubleclick) boilerplate answers.
+The settings panel also contains the "Import OPML" and "Export OPML" buttons.
 ![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings.png)
 
-Boilerplate Answers Editor
+**Boilerplate Answers Editor**
+When you add or edit a boilerplate answer, the boilerplate answers editor appers.
 ![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings_Boilerplate.png)
 
-Boilerplate Answers Usage
+**Boilerplate Answers Usage**
+To write the text of a boilerplate answer in the currently selected text control in your web browser, select a boilerplate answer by title from the dropdown button on the ribbon.
 ![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings_Boilerplate_Use.png)
 
-Edit Feeds / Hosts
+**Edit Feeds / Hosts**
+Right click on any treeview item offers some options. Among others, "Edit" is interesting.
 ![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer_Settings_Edit.png)
 
 Edit Feeds lets you set the feed URI, Edit Host lets you set a zoom factor for that particular host. This is particularly useful in High-DPI displays, that usually don't render well all sites.
