@@ -31,3 +31,9 @@ Sometimes people post questions that are poorly worded or are missing crucial pi
 --------
 [Download ForumSurfer](https://github.com/spaghettidba/ForumSurfer/releases) from the [releases page](https://github.com/spaghettidba/ForumSurfer/releases).
 
+
+----------
+
+**Screenshots**
+--------
+![Main window](https://raw.githubusercontent.com/spaghettidba/ForumSurfer/master/ForumSurfer/Images/ForumSurfer.png)
