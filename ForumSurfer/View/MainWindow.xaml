@@ -84,7 +84,11 @@
             <Controls:Flyout x:Name="OptionsFlyOut" Header="Settings" Position="Right" Width="400" Theme="Accent" IsOpen="{Binding IsOptionsVisible}">
                 <Grid>
                     <DockPanel LastChildFill="False">
-                        <TextBlock Margin="10" DockPanel.Dock="Top" Style="{StaticResource SettingsTextStyleKey}" Text="{Binding VersionInfo}"/>
+                        <TextBlock DockPanel.Dock="Top" Margin="10">
+                            <Hyperlink NavigateUri="https://github.com/spaghettidba/ForumSurfer" RequestNavigate="Hyperlink_RequestNavigate">
+                                <TextBlock FontSize="15" Foreground="White" Text="{Binding VersionInfo}"/>
+                            </Hyperlink>
+                        </TextBlock>
                         <GroupBox Header="Global Settings" DockPanel.Dock="Top" Margin="0,50,0,0">
                             <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
