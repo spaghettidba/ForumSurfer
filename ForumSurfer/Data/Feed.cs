@@ -159,6 +159,12 @@ namespace ForumSurfer.Data
             ";
 
 
+            if (Host == null)
+                Host = Location.Host;
+
+            if (Title == null)
+                Title = Location.ToString();
+
             using (SQLiteConnection m_dbConnection = new SQLiteConnection(Repository.ConnectionString))
             {
                 m_dbConnection.Open();

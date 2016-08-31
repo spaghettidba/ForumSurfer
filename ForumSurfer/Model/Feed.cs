@@ -74,6 +74,13 @@ namespace ForumSurfer.Model
                             Host = Location.Host;
                         }
 
+                        // Title is not set
+                        if (Title.StartsWith("http"))
+                        {
+                            Title = feed.Title.Text;
+                        }
+
+
                         //Date unchanged
                         if(LastUpdate.Equals(feed.LastUpdatedTime.DateTime))
                         {

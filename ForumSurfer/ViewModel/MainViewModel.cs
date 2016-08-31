@@ -174,6 +174,7 @@ namespace ForumSurfer.ViewModel
         private Thread _updaterThread;
         private Model.Article _selectedArticle;
         private Thread _uiThread = Thread.CurrentThread;
+        private bool _updaterInPause = false;
         private SynchronizationContext _uiContext;
         private SortableObservableCollection<Model.Article> _articles;
         private TreeNodeViewModel _selectedNode;
@@ -715,7 +716,7 @@ namespace ForumSurfer.ViewModel
             while (_uiThread.IsAlive)
             {
                 Debug.Print(Thread.CurrentThread.Name);
-                if (databaseTask == null || databaseTask.IsCompleted)
+                if ((databaseTask == null || databaseTask.IsCompleted) && !_updaterInPause)
                 {
                     databaseTask = Task.Factory.StartNew(() =>
                     {
@@ -794,8 +795,7 @@ namespace ForumSurfer.ViewModel
                         {
                             Data.Feed feed = new Data.Feed(f);
                             feed.Location = f.Location;
-                            feed.UpdateFromUri(true, RetentionDays);
-                            feed.Save(true);
+                            feed.Save(false);
                         }
                         catch (Exception ee)
                         {
@@ -803,7 +803,42 @@ namespace ForumSurfer.ViewModel
                         }
                     }
 
+                    // Reload tree
                     InitializeData(true);
+
+
+                    await _dialogCoordinator.ShowMessageAsync(this, "Import OPML", "OPML imported successfully. Allow some minutes to let feed titles update from the RSS feed.");
+
+                    // Update details from the uri
+                    Task updaterTask = Task.Factory.StartNew(async () =>
+                    {
+                        _updaterInPause = true;
+                        foreach (Feed f in t)
+                        {
+                            try
+                            {
+                                Data.Feed feed = new Data.Feed(f);
+                                feed.Location = f.Location;
+                                feed.UpdateFromUri(true, RetentionDays);
+                                feed.Save(true);
+                            }
+                            catch (Exception ee)
+                            {
+                                exc = ee;
+                            }
+                        }
+                        _updaterInPause = false;
+
+                        InitializeData(true);
+
+                        if (exc != null)
+                            await _dialogCoordinator.ShowMessageAsync(this, "Import OPML", "Unable to update feeds: " + exc.Message);
+
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    TaskScheduler.Default);
+
 
                     if (exc != null)
                         throw exc;
