@@ -212,16 +212,20 @@
                     <Button Focusable="False" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Foreground="White" Width="50" Content="{StaticResource SettingsIcon}" ToolTip="Settings" Command="{Binding ShowOptionsCommand}"/>
                 </StackPanel>
             </Grid>
+            
+            
             <Grid x:Name="MainGrid" DockPanel.Dock="Top">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="5" />
                     <ColumnDefinition Width="1.5*" />
+                    <ColumnDefinition Width="5" />
                     <ColumnDefinition Width="4*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
+                
                 <TreeView x:Name="Feeds" DataContext="{Binding Path=TreeModel}" ItemsSource="{Binding Items, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectedItemChanged">
@@ -273,6 +277,7 @@
                     </TreeView.Resources>
                 </TreeView>
 
+                <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 
                 <ListBox Grid.Column="2" Name="ArticlesList" ItemsSource="{Binding SortedArticles.View, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" SelectedItem="{Binding Path=SelectedArticle, Mode=TwoWay}">
                     <ListBox.ItemTemplate>
@@ -324,9 +329,9 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
+                <GridSplitter Grid.Column="3" Width="5" HorizontalAlignment="Stretch" />
 
-
-                <WebBrowser browser:WebBrowserHelper.LinkSource="{Binding Path=SelectedArticle.Location}" Grid.Column="3" Name="wbFeed" Visibility="{Binding Path=IsBrowserVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <WebBrowser browser:WebBrowserHelper.LinkSource="{Binding Path=SelectedArticle.Location}" Grid.Column="4" Name="wbFeed" Visibility="{Binding Path=IsBrowserVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
 
                 </WebBrowser>
 
