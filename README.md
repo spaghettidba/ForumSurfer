@@ -71,4 +71,4 @@ Edit Feeds lets you set the feed URI, Edit Host lets you set a zoom factor for t
 
 **Support**
 --------
-Email forumsurfer@sqlconsulting.it or tweet to @spaghettidba
+Email forumsurfer@sqlconsulting.it or tweet to [@spaghettidba](https://twitter.com/spaghettidba)
