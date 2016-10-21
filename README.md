@@ -68,3 +68,7 @@ Edit Feeds lets you set the feed URI, Edit Host lets you set a zoom factor for t
 **Getting started**
 --------
 [Download a sample OPML file](https://gist.github.com/spaghettidba/4b5a6d47bb61a16456c5400f4bc1cd7a) that includes all the major SQL Server forums and Q&A sites. Import the file from settings, Import OPML.
+
+**Support**
+--------
+Email forumsurfer@sqlconsulting.it or tweet to @spaghettidba
