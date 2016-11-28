@@ -1,8 +1,8 @@
 **ForumSurfer**
 ===========
-*A tiny RSS reader for Windows to answer SQL Server related questions on my favourite sites.*
+*A small RSS reader specifically designed to read and answer forum questions online.*
 
-I use **ForumSurfer** to monitor my favourite forums and Q&A sites in a single place and get notified quickly of new questions that need attention.
+**ForumSurfer** lets you monitor your favourite forums and Q&A sites in a single place and get notified quickly of new questions that need attention.
 
 Why building a RSS reader in 2016?
 ----------------------------------
