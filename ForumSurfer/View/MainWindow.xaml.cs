@@ -30,6 +30,7 @@ namespace ForumSurfer
     {
 
         private int zoomLevel;
+        private int textZoom = 0;
 
         public MainWindow()
         {
@@ -170,8 +171,18 @@ namespace ForumSurfer
                     comWebBrowser = webBrowserInfo.GetValue(wbFeed);
                 if (comWebBrowser != null)
                 {
+                    object textZoomO = textZoom;
                     InternetExplorer ie = (InternetExplorer)comWebBrowser;
+                    try
+                    {
+                        ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref textZoomO, IntPtr.Zero);
+                    }
+                    catch (Exception ex1)
+                    {
+                        Debug.Print(ex1.Message);
+                    }
                     ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_OPTICAL_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref zoomPercent, IntPtr.Zero);
+                    
                 }
             }
             catch (Exception ex)

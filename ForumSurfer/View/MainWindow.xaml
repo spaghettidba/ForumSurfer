@@ -298,6 +298,11 @@
                                             <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
                                             <Setter Property="TextBlock.FontSize" Value="12" />
                                             <Setter Property="TextBlock.Foreground" Value="Gray" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
+                                                    <Setter Property="TextBlock.Foreground" Value="White" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
@@ -308,6 +313,11 @@
                                                 <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
                                                 <Setter Property="TextBlock.FontSize" Value="12" />
                                                 <Setter Property="TextBlock.Foreground" Value="#41B1E1" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
+                                                        <Setter Property="TextBlock.Foreground" Value="White" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
