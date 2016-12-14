@@ -299,6 +299,9 @@
                                             <Setter Property="TextBlock.FontSize" Value="12" />
                                             <Setter Property="TextBlock.Foreground" Value="Gray" />
                                             <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=IsMouseOver}" Value="True">
+                                                    <Setter Property="TextBlock.Foreground" Value="Black" />
+                                                </DataTrigger>
                                                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
                                                     <Setter Property="TextBlock.Foreground" Value="White" />
                                                 </DataTrigger>
@@ -314,6 +317,9 @@
                                                 <Setter Property="TextBlock.FontSize" Value="12" />
                                                 <Setter Property="TextBlock.Foreground" Value="#41B1E1" />
                                                 <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=IsMouseOver}" Value="True">
+                                                        <Setter Property="TextBlock.Foreground" Value="Black" />
+                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
                                                         <Setter Property="TextBlock.Foreground" Value="White" />
                                                     </DataTrigger>
