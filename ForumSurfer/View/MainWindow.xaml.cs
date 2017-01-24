@@ -175,6 +175,7 @@ namespace ForumSurfer
                     InternetExplorer ie = (InternetExplorer)comWebBrowser;
                     try
                     {
+                        if((int)zoomPercent > 100) 
                         ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref textZoomO, IntPtr.Zero);
                     }
                     catch (Exception ex1)
