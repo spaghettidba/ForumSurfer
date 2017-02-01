@@ -11,17 +11,7 @@ namespace ForumSurfer.Browser
 {
     public static class BrowserHelper
     {
-        //private void MuteJSErrors()
-        //{
-        //    dynamic activeX = this.wbFeed.GetType().InvokeMember("ActiveXInstance",
-        //                        BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic,
-        //                        null, this.wbFeed, new object[] { });
-        //    activeX.Silent = true;
-        //}
-
-
-
-
+ 
         private static void SetBrowserFeatureControlKey(string feature, string appName, uint value)
         {
             using (var key = Registry.CurrentUser.CreateSubKey(
@@ -68,6 +58,7 @@ namespace ForumSurfer.Browser
             SetBrowserFeatureControlKey("FEATURE_WEBSOCKET", fileName, 1);
             SetBrowserFeatureControlKey("FEATURE_WINDOW_RESTRICTIONS ", fileName, 0);
             SetBrowserFeatureControlKey("FEATURE_XMLHTTP", fileName, 1);
+            SetBrowserFeatureControlKey("FEATURE_96DPI_PIXEL", fileName, 1);
         }
 
         private static UInt32 GetBrowserEmulationMode()

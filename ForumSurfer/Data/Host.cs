@@ -31,6 +31,7 @@ namespace ForumSurfer.Data
                     feedHost.Title = feed.Host;
                     feedHost.Location = new Uri("http://" + feed.Host);
                     feedHost.Zoom = 100;
+                    feedHost.TextZoom = 2;
                     feed.ParentHost = feedHost;
                     results.Add(feedHost);
                 }
@@ -83,6 +84,11 @@ namespace ForumSurfer.Data
                             if (!(reader["zoom"] == null))
                                 host.Zoom = (int)Int64.Parse(reader["zoom"].ToString());
                         }
+                        if (!(reader["textzoom"] is DBNull))
+                        {
+                            if (!(reader["textzoom"] == null))
+                                host.TextZoom = (int)Int64.Parse(reader["textzoom"].ToString());
+                        }
                         host.Title = reader["uri"].ToString();
                     }
                     else
@@ -98,7 +104,8 @@ namespace ForumSurfer.Data
         {
             String sql = @"
                 UPDATE Hosts
-                SET zoom = $zoom
+                SET zoom = $zoom,
+                    textzoom = $textzoom
                 WHERE uri = $uri;
             ";
 
@@ -111,6 +118,7 @@ namespace ForumSurfer.Data
                     SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
                     command.Parameters.AddWithValue("$uri", Title);
                     command.Parameters.AddWithValue("$zoom", Zoom);
+                    command.Parameters.AddWithValue("$textzoom", TextZoom);
                     command.ExecuteNonQuery();
 
                     tran.Commit();

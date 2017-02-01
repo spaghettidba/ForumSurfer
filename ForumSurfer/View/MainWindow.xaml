@@ -271,7 +271,7 @@
                                     <ContextMenu>
                                         <MenuItem Header="Mark As Read" Command="{Binding Path=DataContext.MarkFeedReadCommand, Source={x:Reference MainWin}}" />
                                         <MenuItem Header="Delete" Command="{Binding Path=DataContext.DeleteFeedCommand, Source={x:Reference MainWin}}" />
-                                        <MenuItem Header="Edit" Command="{Binding Path=DataContext.EditFeedCommand, Source={x:Reference MainWin}}" />
+                                        <MenuItem Header="Properties" Command="{Binding Path=DataContext.EditFeedCommand, Source={x:Reference MainWin}}" />
                                     </ContextMenu>
                                 </TextBlock.ContextMenu>
                             </TextBlock>

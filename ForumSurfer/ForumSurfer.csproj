@@ -132,6 +132,7 @@
     <Compile Include="Model\Settings.cs" />
     <Compile Include="Model\SyndicationFeedXmlReader.cs" />
     <Compile Include="ViewModel\BoilerplateAnswer.cs" />
+    <Compile Include="ViewModel\ZoomEditorViewModel.cs" />
     <Compile Include="ViewModel\BoilerplateEditorViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\SendBoilerplateMessage.cs" />
@@ -140,12 +141,22 @@
     <Compile Include="ViewModel\TreeViewModel.cs" />
     <Compile Include="ViewModel\TreeNodeViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\ZoomDialog.xaml.cs">
+      <DependentUpon>ZoomDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\BoilerplateDialog.xaml.cs">
       <DependentUpon>BoilerplateDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ZoomEditor.xaml.cs">
+      <DependentUpon>ZoomEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\BoilerplateEditor.xaml.cs">
       <DependentUpon>BoilerplateEditor.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\ZoomDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="View\BoilerplateDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -153,6 +164,10 @@
     <Page Include="View\BoilerplateDialogStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ZoomEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

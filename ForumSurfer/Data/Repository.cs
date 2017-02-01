@@ -11,7 +11,7 @@ namespace ForumSurfer.Data
     public class Repository
     {
         public const String DatabaseName = "ForumSurfer.sqlite";
-        public const String DatabaseVersion = "1.0.1";
+        public const String DatabaseVersion = "1.0.2";
 
         public static String DatabaseFolder
         {
@@ -98,10 +98,6 @@ namespace ForumSurfer.Data
                     FROM GlobalOptions
                     WHERE option_id = 1
                 );
-
-                UPDATE GlobalOptions
-                SET value = $version
-                WHERE option_id = 1;
             ";
 
             using (SQLiteConnection m_dbConnection = new SQLiteConnection(ConnectionString))
@@ -121,7 +117,7 @@ namespace ForumSurfer.Data
                     command = new SQLiteCommand(sqlCreateTableBoilerplate, m_dbConnection);
                     command.ExecuteNonQuery();
                     command = new SQLiteCommand(sqlInsertDatabaseVersion, m_dbConnection);
-                    command.Parameters.AddWithValue("$version", DatabaseVersion);
+                    command.Parameters.AddWithValue("$version", "1.0.1");
                     command.ExecuteNonQuery();
                     tran.Commit();
                 }
@@ -129,6 +125,25 @@ namespace ForumSurfer.Data
                 {
                     tran.Rollback();
                     throw;
+                }
+
+                string versionSql = "SELECT value FROM GlobalOptions WHERE option_id = 1";
+                SQLiteCommand cmd = new SQLiteCommand(versionSql, m_dbConnection);
+                string dbVersion = (string)cmd.ExecuteScalar();
+
+                if (dbVersion.Equals("1.0.1"))
+                {
+                    tran = m_dbConnection.BeginTransaction();
+
+                    //string sql = "ALTER TABLE Hosts ADD TextZoom int null;";
+                    //cmd = new SQLiteCommand(sql, m_dbConnection);
+                    //cmd.ExecuteNonQuery();
+
+                    string sql = "UPDATE GlobalOptions SET value = '1.0.2' WHERE option_id = 1;";
+                    cmd = new SQLiteCommand(sql, m_dbConnection);
+                    int i = cmd.ExecuteNonQuery();
+
+                    tran.Commit();
                 }
             }
         }

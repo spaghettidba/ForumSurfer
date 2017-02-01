@@ -146,9 +146,10 @@ namespace ForumSurfer
         private object ReceiveSetZoomMessage(SendSetZoomMessage msg)
         {
             zoomLevel = msg.Zoom;
+            textZoom = msg.TextZoom;
             if (msg.SetImmediately)
             {
-                setBrowserZoom(zoomLevel);
+                setBrowserZoom(zoomLevel, textZoom);
             }
             return null;
         }
@@ -156,11 +157,20 @@ namespace ForumSurfer
 
         private void WbFeed_LoadCompleted(object sender, NavigationEventArgs e)
         {
-            setBrowserZoom(zoomLevel);
+            MuteJSErrors();
+            setBrowserZoom(zoomLevel, textZoom);
+        }
+
+        private void MuteJSErrors()
+        {
+            dynamic activeX = this.wbFeed.GetType().InvokeMember("ActiveXInstance",
+                                BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic,
+                                null, this.wbFeed, new object[] { });
+            activeX.Silent = true;
         }
 
 
-        private void setBrowserZoom(object zoomPercent)
+        private void setBrowserZoom(object zoomPercent, object textZoomLevel)
         {
             try
             {
@@ -171,19 +181,12 @@ namespace ForumSurfer
                     comWebBrowser = webBrowserInfo.GetValue(wbFeed);
                 if (comWebBrowser != null)
                 {
-                    object textZoomO = textZoom;
+                    object textZoomO = 0;
+                    textZoomO = textZoomLevel; 
                     InternetExplorer ie = (InternetExplorer)comWebBrowser;
-                    try
-                    {
-                        if((int)zoomPercent > 100) 
-                        ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref textZoomO, IntPtr.Zero);
-                    }
-                    catch (Exception ex1)
-                    {
-                        Debug.Print(ex1.Message);
-                    }
                     ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_OPTICAL_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref zoomPercent, IntPtr.Zero);
-                    
+                    ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref textZoomO, IntPtr.Zero);
+                    ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref textZoomO, IntPtr.Zero);
                 }
             }
             catch (Exception ex)
@@ -198,6 +201,34 @@ namespace ForumSurfer
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
         }
+        
 
+
+        //private void TextZoomUD_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
+        //{
+        //    string z = TextZoomUD.Value.ToString();
+        //    object zz;
+        //    try
+        //    {
+        //        zz = Int32.Parse(z);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return;
+        //    }
+
+        //    if (wbFeed == null)
+        //        return;
+
+        //    FieldInfo webBrowserInfo = wbFeed.GetType().GetField("_axIWebBrowser2", BindingFlags.Instance | BindingFlags.NonPublic);
+        //    object comWebBrowser = null;
+        //    if (webBrowserInfo != null)
+        //        comWebBrowser = webBrowserInfo.GetValue(wbFeed);
+        //    if (comWebBrowser != null)
+        //    {
+        //        InternetExplorer ie = (InternetExplorer)comWebBrowser;
+        //        ie.ExecWB(SHDocVw.OLECMDID.OLECMDID_ZOOM, SHDocVw.OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ref zz, IntPtr.Zero);
+        //    }
+        //}
     }
 }

@@ -95,7 +95,7 @@ namespace ForumSurfer.ViewModel
 
                 try
                 {
-                    var msg = new SendSetZoomMessage(_selectedArticle.ParentFeed.ParentHost.Zoom);
+                    var msg = new SendSetZoomMessage(_selectedArticle.ParentFeed.ParentHost.Zoom, _selectedArticle.ParentFeed.ParentHost.TextZoom);
                     Messenger.Default.Send<SendSetZoomMessage>(msg);
                 }
                 catch (Exception)
@@ -183,6 +183,7 @@ namespace ForumSurfer.ViewModel
         private bool _optionsVisible = false;
         private CollectionViewSource _sortedArticles = new CollectionViewSource();
         private View.BoilerplateDialog _boilerplate_dialog;
+        private View.ZoomDialog _zoom_dialog;
         #endregion
 
 
@@ -269,29 +270,14 @@ namespace ForumSurfer.ViewModel
                     try
                     {
                         Model.Host selectedHost = (Model.Host)tvm.Node;
+                        Model.Host prevHost = selectedHost;
                         IsBrowserVisible = false;
                         RaisePropertyChanged("IsBrowserVisible");
-                        MetroDialogSettings diagSettings = new MetroDialogSettings();
-                        diagSettings.DefaultText = selectedHost.Zoom.ToString();
-                        var ZoomLevel = await _dialogCoordinator.ShowInputAsync(this, "Set Zoom Level", "Enter the desired zoom level for this host: ", diagSettings);
-                        int prevZoom = selectedHost.Zoom;
-                        selectedHost.Zoom = Int32.Parse(ZoomLevel.ToString());
-                        Data.Host dh = new Data.Host(selectedHost);
-                        dh.Save();
-
-                        if (prevZoom != selectedHost.Zoom)
-                        {
-                            var msg = new SendSetZoomMessage(selectedHost.Zoom);
-                            msg.SetImmediately = true;
-                            Messenger.Default.Send<SendSetZoomMessage>(msg);
-                        }
+                        EditZoom(selectedHost);
                     }
                     catch (Exception ex)
                     {
                         await _dialogCoordinator.ShowMessageAsync(this, "Set Zoom Level", "Unable to set zoom: " + ex.Message);
-                    }
-                    finally
-                    {
                         IsBrowserVisible = true;
                         RaisePropertyChanged("IsBrowserVisible");
                     }
@@ -559,6 +545,48 @@ namespace ForumSurfer.ViewModel
             }
         }
 
+
+        public async void UpdateZoom(int PageZoom, int TextZoom, Host host)
+        {
+            try
+            {
+                ZoomEditorViewModel bpdc = (ZoomEditorViewModel)_zoom_dialog.DataContext;
+                if (!bpdc.Cancel && bpdc.Exception == null)
+                {
+                    host.Zoom = PageZoom;
+                    host.TextZoom = TextZoom;
+                    Data.Host dh = new Data.Host(host);
+                    dh.Save();
+
+                    Data.Host selectedHost = Data.Host.Load(host.Location.Host.ToString());
+
+                    IsBrowserVisible = true;
+                    RaisePropertyChanged("IsBrowserVisible");
+
+                    var m = new SendSetZoomMessage(selectedHost.Zoom, selectedHost.TextZoom);
+                    m.SetImmediately = true;
+                    Messenger.Default.Send<SendSetZoomMessage>(m);
+                }
+                if (bpdc.Exception != null)
+                {
+                    await _dialogCoordinator.ShowMessageAsync(this, "Update Zoom", "Unable to save: " + bpdc.Exception.Message);
+                }
+            }
+            finally
+            {
+                IsBrowserVisible = true;
+                RaisePropertyChanged("IsBrowserVisible");
+            }
+        }
+
+
+        private async void EditZoom(Host param)
+        {
+            _zoom_dialog = new View.ZoomDialog();
+            ZoomEditorViewModel bpdc = new ZoomEditorViewModel() { PageZoom = param.Zoom, TextZoom = param.TextZoom, Host = param, Context = this, Dialog = _zoom_dialog };
+            _zoom_dialog.DataContext = bpdc;
+            await _dialogCoordinator.ShowMetroDialogAsync(this, _zoom_dialog);
+        }
 
 
         private void SelectedItemChanged(RoutedPropertyChangedEventArgs<object> obj)

@@ -10,11 +10,13 @@ namespace ForumSurfer.ViewModel
     {
 
         public int Zoom { get; set; } = 100;
+        public int TextZoom { get; set; } = 2;
         public bool SetImmediately { get; set; } = false;
 
-        public SendSetZoomMessage(int zoom)
+        public SendSetZoomMessage(int zoom, int textZoom)
         {
             this.Zoom = zoom;
+            this.TextZoom = textZoom;
         }
     }
 }

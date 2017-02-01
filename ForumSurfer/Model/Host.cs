@@ -11,6 +11,7 @@ namespace ForumSurfer.Model
         public Uri Location { get; set; }
         public string Title { get; set; }
         public int Zoom { get; set; }
+        public int TextZoom { get; set; }
         public List<Feed> Feeds { get; set; }
 
         public Object SortKey
@@ -31,6 +32,7 @@ namespace ForumSurfer.Model
             this.Location = h.Location;
             this.Title = h.Title;
             this.Zoom = h.Zoom;
+            this.TextZoom = h.TextZoom;
             this.Feeds = h.Feeds;
         }
 
