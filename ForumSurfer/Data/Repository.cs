@@ -135,11 +135,11 @@ namespace ForumSurfer.Data
                 {
                     tran = m_dbConnection.BeginTransaction();
 
-                    //string sql = "ALTER TABLE Hosts ADD TextZoom int null;";
-                    //cmd = new SQLiteCommand(sql, m_dbConnection);
-                    //cmd.ExecuteNonQuery();
+                    string sql = "ALTER TABLE Hosts ADD TextZoom int null;";
+                    cmd = new SQLiteCommand(sql, m_dbConnection);
+                    cmd.ExecuteNonQuery();
 
-                    string sql = "UPDATE GlobalOptions SET value = '1.0.2' WHERE option_id = 1;";
+                    sql = "UPDATE GlobalOptions SET value = '1.0.2' WHERE option_id = 1;";
                     cmd = new SQLiteCommand(sql, m_dbConnection);
                     int i = cmd.ExecuteNonQuery();
 

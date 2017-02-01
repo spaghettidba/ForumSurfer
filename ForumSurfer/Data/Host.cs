@@ -88,7 +88,12 @@ namespace ForumSurfer.Data
                         {
                             if (!(reader["textzoom"] == null))
                                 host.TextZoom = (int)Int64.Parse(reader["textzoom"].ToString());
+                            else
+                                host.TextZoom = 2;
                         }
+                        else
+                            host.TextZoom = 2;
+
                         host.Title = reader["uri"].ToString();
                     }
                     else
