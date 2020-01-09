@@ -50,6 +50,8 @@ namespace ForumSurfer.Model
             //using (SyndicationFeedXmlReader x = new SyndicationFeedXmlReader(client.OpenRead(Location)))
             HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(Location.ToString());
             httpWebRequest.UserAgent = "Googlebot/1.0 (googlebot@googlebot.com http://googlebot.com/)";
+            httpWebRequest.Method = "GET";
+            httpWebRequest.AllowAutoRedirect = true;
 
             // Use The Default Proxy
             httpWebRequest.Proxy = System.Net.WebRequest.DefaultWebProxy;
@@ -57,6 +59,15 @@ namespace ForumSurfer.Model
             // Use The Thread's Credentials (Logged In User's Credentials)
             if (httpWebRequest.Proxy != null)
                 httpWebRequest.Proxy.Credentials = CredentialCache.DefaultCredentials;
+
+            // Enable SSL
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
+                | SecurityProtocolType.Tls11
+                | SecurityProtocolType.Tls12
+                | SecurityProtocolType.Ssl3;
+
+            // allows for validation of SSL conversations
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 
             using (HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse())
             {
